@@ -69,61 +69,6 @@ export class BirdMove extends Move {
   }
 
   /**
-   * Get all valid targets for Bird movement
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {import('../engine/Coordinate.js').Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    if (!this.piece.coordinate) {
-      return [];
-    }
-
-    const targets = [];
-    const directions = [
-      { dx: 0, dy: 1 },  // North
-      { dx: 1, dy: 0 },  // East
-      { dx: 0, dy: -1 }, // South
-      { dx: -1, dy: 0 }  // West
-    ];
-
-    // Check each orthogonal direction
-    for (const dir of directions) {
-      let distance = 1;
-      let blocked = false;
-
-      while (!blocked) {
-        const targetX = this.piece.coordinate.x + (dir.dx * distance);
-        const targetY = this.piece.coordinate.y + (dir.dy * distance);
-        const target = new Coordinate(targetX, targetY);
-
-        // Stop if we hit a piece
-        if (gameState.hasPiece(target)) {
-          const targetPiece = gameState.getPieceAt(target);
-          // Can capture enemy pieces but not friendly ones
-          if (targetPiece && targetPiece.owner !== this.piece.owner) {
-            targets.push(target);
-          }
-          blocked = true;
-        } else if (gameState.hasTerrain(target)) {
-          // Can move to empty terrain
-          targets.push(target);
-          distance++;
-        } else {
-          // Stop at water (unless this Bird can move to water)
-          blocked = true;
-        }
-
-        // Sanity check to prevent infinite loops
-        if (distance > 50) {
-          blocked = true;
-        }
-      }
-    }
-
-    return targets;
-  }
-
-  /**
    * Get a human-readable description of this action
    * @returns {string}
    */

@@ -122,20 +122,9 @@ export class GameEngine {
       /** @type {typeof import('../actions/Action.js').Action} */
       const TypedActionClass = /** @type {any} */ (ActionClass);
       const action = new TypedActionClass(piece);
-      const targets = action.getValidTargets(this.gameState);
       
-      // Filter targets that pass validation
-      const validTargets = targets.filter(/** @param {Coordinate} target */ (target) => {
-        try {
-          this.checkAction(piece, action, target);
-          return true;
-        } catch (error) {
-          if (error instanceof RuleViolation) {
-            return false;
-          }
-          throw error;
-        }
-      });
+      // Generate potential targets by iterating over board extents plus margin
+      const validTargets = this.getValidTargetsForAction(piece, action);
 
       if (validTargets.length > 0) {
         validActions.push({
@@ -146,6 +135,45 @@ export class GameEngine {
     }
 
     return validActions;
+  }
+
+  /**
+   * Get valid targets for an action by iterating over board coordinates and testing with check()
+   * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
+   * @param {import('../actions/Action.js').Action} action - The action to get targets for
+   * @returns {Coordinate[]} Array of valid target coordinates
+   */
+  getValidTargetsForAction(piece, action) {
+    const validTargets = [];
+    
+    // Get board extents with a margin for pieces that can move long distances
+    const extents = this.gameState.getBoardExtents();
+    const margin = 3; // Reasonable margin for long-range pieces like Bird
+    
+    const minX = extents.minX - margin;
+    const maxX = extents.maxX + margin;
+    const minY = extents.minY - margin;
+    const maxY = extents.maxY + margin;
+    
+    // Iterate over all coordinates in the extended area
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
+        const target = new Coordinate(x, y);
+        
+        try {
+          this.checkAction(piece, action, target);
+          validTargets.push(target);
+        } catch (error) {
+          if (error instanceof RuleViolation) {
+            // Invalid target, skip it
+            continue;
+          }
+          throw error; // Re-throw unexpected errors
+        }
+      }
+    }
+    
+    return validTargets;
   }
 
   /**

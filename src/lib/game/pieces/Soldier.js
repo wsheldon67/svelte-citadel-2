@@ -64,41 +64,6 @@ export class SoldierMove extends Move {
   }
 
   /**
-   * Get all valid targets for Soldier movement
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {import('../engine/Coordinate.js').Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    if (!this.piece.coordinate) {
-      return [];
-    }
-
-    const targets = [];
-    
-    // Get all adjacent coordinates (orthogonal + diagonal)
-    const adjacentCoords = this.piece.coordinate.getAllAdjacent();
-
-    for (const coord of adjacentCoords) {
-      // Check if there's terrain to move to (or if this piece can move to water)
-      if (gameState.hasTerrain(coord) || this.canMoveToWater()) {
-        const occupyingPiece = gameState.getPieceAt(coord);
-        
-        // If empty, can move there
-        if (!occupyingPiece) {
-          targets.push(coord);
-        } 
-        // If enemy piece, can capture
-        else if (occupyingPiece.owner !== this.piece.owner) {
-          targets.push(coord);
-        }
-        // Can't move to friendly pieces (handled by base validation)
-      }
-    }
-
-    return targets;
-  }
-
-  /**
    * Get a human-readable description of this action
    * @returns {string}
    */

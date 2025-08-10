@@ -261,6 +261,39 @@ export class GameState {
   }
 
   /**
+   * Get the extents of the current board (min/max coordinates of all pieces and terrain)
+   * @returns {{minX: number, maxX: number, minY: number, maxY: number}} Board extents
+   */
+  getBoardExtents() {
+    let minX = 0, maxX = 0, minY = 0, maxY = 0;
+    let hasAnyPieces = false;
+
+    for (const [key, cell] of this.board) {
+      if (cell.piece || cell.terrain) {
+        const coord = Coordinate.fromKey(key);
+        if (!hasAnyPieces) {
+          // First piece/terrain found, initialize extents
+          minX = maxX = coord.x;
+          minY = maxY = coord.y;
+          hasAnyPieces = true;
+        } else {
+          minX = Math.min(minX, coord.x);
+          maxX = Math.max(maxX, coord.x);
+          minY = Math.min(minY, coord.y);
+          maxY = Math.max(maxY, coord.y);
+        }
+      }
+    }
+
+    // If no pieces on board, return a default small area around origin
+    if (!hasAnyPieces) {
+      return { minX: -5, maxX: 5, minY: -5, maxY: 5 };
+    }
+
+    return { minX, maxX, minY, maxY };
+  }
+
+  /**
    * Add a player to the game
    * @param {string} playerId
    */
