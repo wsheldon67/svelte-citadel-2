@@ -316,6 +316,99 @@ export class GameState {
   }
 
   /**
+   * Add a piece to the community pool
+   * @param {import('../pieces/Piece.js').Piece} piece
+   */
+  addToCommunityPool(piece) {
+    this.communityPool.push(piece);
+    this._updateLastModified();
+  }
+
+  /**
+   * Remove a piece from the community pool
+   * @param {import('../pieces/Piece.js').Piece} piece
+   * @returns {boolean} True if the piece was found and removed
+   */
+  removeFromCommunityPool(piece) {
+    const index = this.communityPool.indexOf(piece);
+    if (index >= 0) {
+      this.communityPool.splice(index, 1);
+      this._updateLastModified();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get a land tile from the community pool if available
+   * @returns {import('../pieces/Piece.js').Piece|null} Land piece or null if none available
+   */
+  getLandFromCommunityPool() {
+    const landIndex = this.communityPool.findIndex(piece => piece.type === 'Land');
+    if (landIndex >= 0) {
+      const land = this.communityPool[landIndex];
+      this.communityPool.splice(landIndex, 1);
+      this._updateLastModified();
+      return land;
+    }
+    return null;
+  }
+
+  /**
+   * Remove terrain from a coordinate and return it
+   * @param {Coordinate} coordinate
+   * @returns {import('../pieces/Piece.js').Piece|null} The removed terrain piece or null
+   */
+  removeTerrain(coordinate) {
+    const cell = this.getCell(coordinate);
+    const terrain = cell.terrain;
+    if (terrain) {
+      cell.terrain = null;
+      this.board.set(coordinate.key, cell);
+      this._updateLastModified();
+    }
+    return terrain;
+  }
+
+  /**
+   * Move a piece to the graveyard
+   * @param {import('../pieces/Piece.js').Piece} piece
+   */
+  moveToGraveyard(piece) {
+    this.graveyard.push(piece);
+    this._updateLastModified();
+  }
+
+  /**
+   * Remove both terrain and piece at a coordinate, handling graveyard/community pool appropriately
+   * @param {Coordinate} coordinate
+   * @returns {{terrain: import('../pieces/Piece.js').Piece|null, piece: import('../pieces/Piece.js').Piece|null}}
+   */
+  removeCellContents(coordinate) {
+    const cell = this.getCell(coordinate);
+    const terrain = cell.terrain;
+    const piece = cell.piece;
+
+    // Clear the cell
+    cell.terrain = null;
+    cell.piece = null;
+    this.board.set(coordinate.key, cell);
+
+    // Move terrain to community pool if it exists
+    if (terrain) {
+      this.addToCommunityPool(terrain);
+    }
+
+    // Move piece to graveyard if it exists
+    if (piece) {
+      this.moveToGraveyard(piece);
+    }
+
+    this._updateLastModified();
+    return { terrain, piece };
+  }
+
+  /**
    * Add a player to the game
    * @param {string} playerId
    */

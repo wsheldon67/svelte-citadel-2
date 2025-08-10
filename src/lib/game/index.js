@@ -12,6 +12,7 @@ export { Move } from './actions/Move.js';
 // Piece Implementations
 export { Bird } from './pieces/Bird.js';
 export { Soldier } from './pieces/Soldier.js';
+export { Builder } from './pieces/Builder.js';
 
 // Testing
 export { runBasicTest } from './engine/BasicTest.js';
