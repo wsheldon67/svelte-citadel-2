@@ -25,3 +25,9 @@ The "empty" area. Lands and Turtles go in it.
 
 - Most pieces, including Citadels.
 - There must be something (Land, Turtle, etc.) in the Terrain layer to place a piece.
+
+# General Rules
+
+## Citadels Must be Connected
+
+Citadels must be placed such that they are connected by Land tiles that are orthagonally adjacent. Any action that would cause the existing Citadels to become disconnected is not allowed.

@@ -42,3 +42,28 @@ class Bird extends Piece {
   ]
 }
 ```
+
+# Unusual Actions
+
+## Builder
+
+The Builder piece can move, remove, and place Land tiles.
+- A naive approach where a player clicks a piece they own and then a target tile to take an action on is broken by this. The player needs to select a Land and then where to move it to.
+
+## Turtle
+
+The Turtle is placed in water instead of Land, and can carry other pieces on its back.
+- When the Turtle moves, the piece on the turtle moves too.
+- A Turtle can carry friendly or enemy pieces.
+
+## Bomber
+
+When a Bomber explodes, it sets off other nearby Bombers in a chain reaction.
+
+## Assassin
+
+Assassins can move through an unlimited number of connected pieces without capturing them.
+
+## Necromancer
+
+The Necromancer can replace itself with a piece from the Graveyard. That piece becomes owned by the player who owned the Necromancer.

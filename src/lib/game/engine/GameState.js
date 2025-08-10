@@ -1,0 +1,385 @@
+import { Coordinate } from './Coordinate.js';
+
+/**
+ * @typedef {Object} Cell
+ * @property {import('../pieces/Piece.js').Piece|null} terrain - The terrain piece (Land, Turtle, etc.)
+ * @property {import('../pieces/Piece.js').Piece|null} piece - The piece on this cell
+ */
+
+/**
+ * @typedef {Object} GameStateOptions
+ * @property {boolean} [isSimulation] - Flag to prevent recursive validation
+ */
+
+/**
+ * @typedef {Object} CopyOptions
+ * @property {boolean} [isSimulation] - Whether the copy is for simulation
+ */
+
+/**
+ * @typedef {Object} PieceLocation
+ * @property {Coordinate} coordinate - The coordinate of the piece
+ * @property {import('../pieces/Piece.js').Piece} piece - The piece object
+ */
+
+/**
+ * @typedef {Object} GameStateJSON
+ * @property {Object[]} board
+ * @property {string[]} players
+ * @property {number} currentPlayerIndex
+ * @property {number} turnNumber
+ * @property {Object[]} playerStashes
+ * @property {Object[]} communityPool
+ * @property {Object[]} graveyard
+ * @property {Object[]} actionHistory
+ * @property {string} createdAt
+ * @property {string} lastModified
+ */
+
+/**
+ * Represents the complete game state, designed to be deep copyable.
+ * The current game state can always be derived from the initial state and actions taken.
+ */
+export class GameState {
+  /**
+   * @param {GameStateOptions} [options]
+   */
+  constructor(options = {}) {
+    this.isSimulation = options.isSimulation || false;
+    
+    // Core game state
+    /** @type {Map<string, Cell>} */
+    this.board = new Map(); // coordinate.key -> { terrain: piece|null, piece: piece|null }
+    
+    /** @type {string[]} */
+    this.players = [];
+    
+    /** @type {number} */
+    this.currentPlayerIndex = 0;
+    
+    /** @type {number} */
+    this.turnNumber = 1;
+    
+    // Piece collections
+    /** @type {Map<string, import('../pieces/Piece.js').Piece[]>} */
+    this.playerStashes = new Map(); // playerId -> pieces[]
+    
+    /** @type {import('../pieces/Piece.js').Piece[]} */
+    this.communityPool = [];
+    
+    /** @type {import('../pieces/Piece.js').Piece[]} */
+    this.graveyard = [];
+    
+    // Action history for replay and undo
+    /** @type {Object[]} */
+    this.actionHistory = [];
+    
+    // Game metadata
+    /** @type {Date} */
+    this.createdAt = new Date();
+    
+    /** @type {Date} */
+    this.lastModified = new Date();
+  }
+
+  /**
+   * Get the current player
+   * @returns {string}
+   */
+  get currentPlayer() {
+    return this.players[this.currentPlayerIndex];
+  }
+
+  /**
+   * Create a deep copy of the game state
+   * @param {CopyOptions} [options]
+   * @returns {GameState}
+   */
+  copy(options = {}) {
+    const newState = new GameState({ 
+      isSimulation: options.isSimulation !== undefined ? options.isSimulation : this.isSimulation 
+    });
+    
+    // Deep copy board
+    newState.board = new Map();
+    for (const [key, cell] of this.board) {
+      newState.board.set(key, {
+        terrain: cell.terrain ? cell.terrain.copy() : null,
+        piece: cell.piece ? cell.piece.copy() : null
+      });
+    }
+    
+    // Copy arrays and maps
+    newState.players = [...this.players];
+    newState.currentPlayerIndex = this.currentPlayerIndex;
+    newState.turnNumber = this.turnNumber;
+    
+    // Deep copy piece collections
+    newState.playerStashes = new Map();
+    for (const [playerId, stash] of this.playerStashes) {
+      newState.playerStashes.set(playerId, stash.map(piece => piece.copy()));
+    }
+    
+    newState.communityPool = this.communityPool.map(piece => piece.copy());
+    newState.graveyard = this.graveyard.map(piece => piece.copy());
+    
+    // Copy action history (actions should be immutable)
+    newState.actionHistory = [...this.actionHistory];
+    
+    // Copy metadata
+    newState.createdAt = new Date(this.createdAt);
+    newState.lastModified = new Date(this.lastModified);
+    
+    return newState;
+  }
+
+  /**
+   * Get the cell at a coordinate
+   * @param {Coordinate} coordinate
+   * @returns {Cell} { terrain: piece|null, piece: piece|null }
+   */
+  getCell(coordinate) {
+    return this.board.get(coordinate.key) || { terrain: null, piece: null };
+  }
+
+  /**
+   * Set the terrain at a coordinate
+   * @param {Coordinate} coordinate
+   * @param {import('../pieces/Piece.js').Piece|null} terrainPiece
+   */
+  setTerrain(coordinate, terrainPiece) {
+    const cell = this.getCell(coordinate);
+    cell.terrain = terrainPiece;
+    this.board.set(coordinate.key, cell);
+    this._updateLastModified();
+  }
+
+  /**
+   * Set the piece at a coordinate
+   * @param {Coordinate} coordinate
+   * @param {import('../pieces/Piece.js').Piece|null} piece
+   */
+  setPiece(coordinate, piece) {
+    const cell = this.getCell(coordinate);
+    cell.piece = piece;
+    this.board.set(coordinate.key, cell);
+    this._updateLastModified();
+  }
+
+  /**
+   * Get the terrain piece at a coordinate
+   * @param {Coordinate} coordinate
+   * @returns {import('../pieces/Piece.js').Piece|null}
+   */
+  getTerrainAt(coordinate) {
+    return this.getCell(coordinate).terrain;
+  }
+
+  /**
+   * Get the piece at a coordinate
+   * @param {Coordinate} coordinate
+   * @returns {import('../pieces/Piece.js').Piece|null}
+   */
+  getPieceAt(coordinate) {
+    return this.getCell(coordinate).piece;
+  }
+
+  /**
+   * Check if a coordinate has terrain (land or turtle)
+   * @param {Coordinate} coordinate
+   * @returns {boolean}
+   */
+  hasTerrain(coordinate) {
+    return this.getTerrainAt(coordinate) !== null;
+  }
+
+  /**
+   * Check if a coordinate has a piece
+   * @param {Coordinate} coordinate
+   * @returns {boolean}
+   */
+  hasPiece(coordinate) {
+    return this.getPieceAt(coordinate) !== null;
+  }
+
+  /**
+   * Check if a coordinate is water (no terrain)
+   * @param {Coordinate} coordinate
+   * @returns {boolean}
+   */
+  isWater(coordinate) {
+    return !this.hasTerrain(coordinate);
+  }
+
+  /**
+   * Get all coordinates that have terrain
+   * @returns {Coordinate[]}
+   */
+  getAllTerrainCoordinates() {
+    const coordinates = [];
+    for (const [key, cell] of this.board) {
+      if (cell.terrain) {
+        coordinates.push(Coordinate.fromKey(key));
+      }
+    }
+    return coordinates;
+  }
+
+  /**
+   * Get all coordinates that have pieces
+   * @returns {Coordinate[]}
+   */
+  getAllPieceCoordinates() {
+    const coordinates = [];
+    for (const [key, cell] of this.board) {
+      if (cell.piece) {
+        coordinates.push(Coordinate.fromKey(key));
+      }
+    }
+    return coordinates;
+  }
+
+  /**
+   * Find pieces of a specific type
+   * @param {string} pieceType
+   * @param {string|null} [playerId] - Optional filter by player
+   * @returns {PieceLocation[]} Array of {coordinate, piece} objects
+   */
+  findPieces(pieceType, playerId = null) {
+    const pieces = [];
+    for (const [key, cell] of this.board) {
+      if (cell.piece && cell.piece.type === pieceType) {
+        if (!playerId || cell.piece.owner === playerId) {
+          pieces.push({
+            coordinate: Coordinate.fromKey(key),
+            piece: cell.piece
+          });
+        }
+      }
+    }
+    return pieces;
+  }
+
+  /**
+   * Add a player to the game
+   * @param {string} playerId
+   */
+  addPlayer(playerId) {
+    if (!this.players.includes(playerId)) {
+      this.players.push(playerId);
+      this.playerStashes.set(playerId, []);
+    }
+    this._updateLastModified();
+  }
+
+  /**
+   * Advance to the next player's turn
+   */
+  nextTurn() {
+    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+    if (this.currentPlayerIndex === 0) {
+      this.turnNumber++;
+    }
+    this._updateLastModified();
+  }
+
+  /**
+   * Add an action to the history
+   * @param {Object} action
+   */
+  addAction(action) {
+    this.actionHistory.push({
+      ...action,
+      timestamp: new Date(),
+      turnNumber: this.turnNumber,
+      player: this.currentPlayer
+    });
+    this._updateLastModified();
+  }
+
+  /**
+   * Update the last modified timestamp
+   * @private
+   */
+  _updateLastModified() {
+    if (!this.isSimulation) {
+      this.lastModified = new Date();
+    }
+  }
+
+  /**
+   * Serialize the game state to JSON
+   * @returns {Object}
+   */
+  toJSON() {
+    const boardArray = [];
+    for (const [key, cell] of this.board) {
+      if (cell.terrain || cell.piece) {
+        boardArray.push({
+          coordinate: key,
+          terrain: cell.terrain ? cell.terrain.toJSON() : null,
+          piece: cell.piece ? cell.piece.toJSON() : null
+        });
+      }
+    }
+
+    const playerStashesArray = [];
+    for (const [playerId, stash] of this.playerStashes) {
+      playerStashesArray.push({ 
+        playerId, 
+        stash: stash.map(piece => piece.toJSON()) 
+      });
+    }
+
+    return {
+      board: boardArray,
+      players: this.players,
+      currentPlayerIndex: this.currentPlayerIndex,
+      turnNumber: this.turnNumber,
+      playerStashes: playerStashesArray,
+      communityPool: this.communityPool.map(piece => piece.toJSON()),
+      graveyard: this.graveyard.map(piece => piece.toJSON()),
+      actionHistory: this.actionHistory,
+      createdAt: this.createdAt.toISOString(),
+      lastModified: this.lastModified.toISOString()
+    };
+  }
+
+  /**
+   * Create a GameState from JSON data
+   * @param {GameStateJSON} data
+   * @param {Function} pieceFromJSON - Function to create pieces from JSON
+   * @returns {GameState}
+   */
+  static fromJSON(data, pieceFromJSON) {
+    const state = new GameState();
+    
+    // Restore board
+    state.board = new Map();
+    for (const cell of data.board) {
+      state.board.set(cell.coordinate, {
+        terrain: cell.terrain ? pieceFromJSON(cell.terrain) : null,
+        piece: cell.piece ? pieceFromJSON(cell.piece) : null
+      });
+    }
+    
+    // Restore other properties
+    state.players = data.players;
+    state.currentPlayerIndex = data.currentPlayerIndex;
+    state.turnNumber = data.turnNumber;
+    
+    // Restore player stashes
+    state.playerStashes = new Map();
+    for (const { playerId, stash } of data.playerStashes) {
+      state.playerStashes.set(playerId, stash.map(pieceData => pieceFromJSON(pieceData)));
+    }
+    
+    state.communityPool = data.communityPool.map(pieceData => pieceFromJSON(pieceData));
+    state.graveyard = data.graveyard.map(pieceData => pieceFromJSON(pieceData));
+    state.actionHistory = data.actionHistory;
+    state.createdAt = new Date(data.createdAt);
+    state.lastModified = new Date(data.lastModified);
+    
+    return state;
+  }
+}

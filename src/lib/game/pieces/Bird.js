@@ -1,0 +1,133 @@
+import { Piece } from './Piece.js';
+import { Move } from '../actions/Move.js';
+import { RuleViolation } from '../engine/RuleViolation.js';
+import { Coordinate } from '../engine/Coordinate.js';
+
+/**
+ * Bird piece implementation
+ * Movement: Moves in straight lines (orthogonally) for any distance
+ * Capture: Can capture any piece it lands on during its move
+ */
+export class Bird extends Piece {
+  /**
+   * @param {Omit<import('./Piece.js').PieceOptions, 'type'>} options
+   */
+  constructor(options) {
+    super({ ...options, type: 'Bird' });
+  }
+
+  /**
+   * Get all available actions for the Bird
+   * @returns {Function[]} Array of Action constructor functions
+   */
+  getActions() {
+    return [BirdMove];
+  }
+
+  /**
+   * Create a bird from JSON data
+   * @param {import('./Piece.js').PieceJSON} data
+   * @returns {Bird}
+   */
+  static fromJSON(data) {
+    return new Bird({
+      owner: data.owner,
+      id: data.id
+    });
+  }
+}
+
+/**
+ * Bird-specific movement action
+ * Extends the base Move class with Bird-specific movement rules
+ */
+export class BirdMove extends Move {
+  /**
+   * Check if the target is a valid move for the Bird
+   * @param {import('../engine/Coordinate.js').Coordinate} target - The target tile to check
+   * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
+   * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the move
+   * @throws {RuleViolation} If the move is invalid
+   */
+  check(target, currentGame, newGame) {
+    // Call base class validation (includes basic move rules)
+    super.check(target, currentGame, newGame);
+    
+    if (!this.piece.coordinate) {
+      throw new RuleViolation('Bird must be on the board to move');
+    }
+    
+    // Bird can only move orthogonally (no gaps allowed for adjacency, but line movement allowed)
+    if (!this.piece.isOrthogonalTo(target, { gapsAllowed: true })) {
+      throw new RuleViolation('Bird can only move to orthogonal tiles');
+    }
+    
+    // Check if the path is clear (no pieces blocking the way)
+    if (!this.piece.isPathClear(target)) {
+      throw new RuleViolation('Bird cannot jump over pieces');
+    }
+  }
+
+  /**
+   * Get all valid targets for Bird movement
+   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
+   * @returns {import('../engine/Coordinate.js').Coordinate[]} Array of valid target coordinates
+   */
+  getValidTargets(gameState) {
+    if (!this.piece.coordinate) {
+      return [];
+    }
+
+    const targets = [];
+    const directions = [
+      { dx: 0, dy: 1 },  // North
+      { dx: 1, dy: 0 },  // East
+      { dx: 0, dy: -1 }, // South
+      { dx: -1, dy: 0 }  // West
+    ];
+
+    // Check each orthogonal direction
+    for (const dir of directions) {
+      let distance = 1;
+      let blocked = false;
+
+      while (!blocked) {
+        const targetX = this.piece.coordinate.x + (dir.dx * distance);
+        const targetY = this.piece.coordinate.y + (dir.dy * distance);
+        const target = new Coordinate(targetX, targetY);
+
+        // Stop if we hit a piece
+        if (gameState.hasPiece(target)) {
+          const targetPiece = gameState.getPieceAt(target);
+          // Can capture enemy pieces but not friendly ones
+          if (targetPiece && targetPiece.owner !== this.piece.owner) {
+            targets.push(target);
+          }
+          blocked = true;
+        } else if (gameState.hasTerrain(target)) {
+          // Can move to empty terrain
+          targets.push(target);
+          distance++;
+        } else {
+          // Stop at water (unless this Bird can move to water)
+          blocked = true;
+        }
+
+        // Sanity check to prevent infinite loops
+        if (distance > 50) {
+          blocked = true;
+        }
+      }
+    }
+
+    return targets;
+  }
+
+  /**
+   * Get a human-readable description of this action
+   * @returns {string}
+   */
+  getDescription() {
+    return 'Move Bird orthogonally';
+  }
+}
