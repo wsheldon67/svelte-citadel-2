@@ -353,18 +353,42 @@ export class GameEngine {
   /**
    * Validate that Citadels remain connected
    * This is a core rule of the game
-   * @param {string} playerId - The player to check
-   * @returns {boolean}
+   * Checks all citadels across all players are connected via orthogonally adjacent terrain (Land/Turtle)
+   * @returns {boolean} true when 0-1 citadels or all are connected
    */
-  validateCitadelConnectivity(playerId) {
-    const citadels = this.gameState.findPieces('Citadel', playerId);
-    if (citadels.length <= 1) {
-      return true; // Single or no citadels are always "connected"
+  validateCitadelConnectivity() {
+    // Gather all citadels regardless of owner
+    const citadels = [];
+    for (const { coordinate, piece } of this._iterAllPieces()) {
+      if (piece.type === 'Citadel') citadels.push(coordinate);
     }
-    
-    // TODO: Implement path-finding to verify all citadels are connected
-    // via orthogonally adjacent land tiles
-    
-    return true;
+    if (citadels.length <= 1) return true;
+
+    // BFS from the first citadel across passable terrain (any terrain counts as passable; Turtle acts as Land for this rule)
+    const start = citadels[0];
+    const visited = new Set([start.key]);
+    const queue = [start];
+    while (queue.length) {
+      const cur = queue.shift();
+      if (!cur) break;
+      for (const n of cur.getOrthogonalAdjacent()) {
+        if (visited.has(n.key)) continue;
+        if (!this.gameState.hasTerrain(n)) continue; // only traverse terrain tiles
+        visited.add(n.key);
+        queue.push(n);
+      }
+    }
+
+    // All citadels must be on visited terrain
+    return citadels.every((c) => visited.has(c.key));
+  }
+
+  /** @returns {Iterable<{coordinate: Coordinate, piece: import('../pieces/Piece.js').Piece}>} */
+  *_iterAllPieces() {
+    for (const [key, cell] of this.gameState.board) {
+      if (cell.piece) {
+        yield { coordinate: Coordinate.fromKey(key), piece: cell.piece };
+      }
+    }
   }
 }

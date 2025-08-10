@@ -41,7 +41,7 @@
     <ul>
       <li><a href="/">Back</a></li>
       {#if isHost}
-        <li><button type="button" onclick={onStart}>Start game</button></li>
+  <li><button type="button" onclick={onStart}>Start game</button></li>
       {/if}
     </ul>
   </nav>

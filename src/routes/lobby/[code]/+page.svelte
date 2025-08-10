@@ -81,6 +81,19 @@
   function onStart() {
     const lobbyRef = doc(db, 'lobbies', code);
     updateDoc(lobbyRef, { status: 'started', updatedAt: serverTimestamp() });
+    // Navigate to game setup with query carrying setup options
+    try {
+      const params = new URLSearchParams({
+        pc: String(setup?.playerCount || 2),
+        lpp: String(setup?.landsPerPlayer || 3),
+        ppp: String(setup?.personalPiecesPerPlayer || 3),
+        cpp: String(setup?.communityPiecesPerPlayer || 3),
+        variant: String(setup?.variant || '')
+      });
+      const url = `/game/${code}?${params}`;
+      // Prefer client navigation; fallback to location
+      import('$app/navigation').then(({ goto }) => goto(url)).catch(() => { location.href = url; });
+    } catch {}
   }
 
   onMount(() => {
