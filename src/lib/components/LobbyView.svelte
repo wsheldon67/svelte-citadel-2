@@ -1,12 +1,5 @@
 <script>
-  let { code, name, isHost = false, setup } = $props();
-
-  const players = $state([{ name, id: 'you' }]);
-
-  function startGame() {
-    // Placeholder: in future, trigger backend lobby -> game transition
-    alert('Starting game...');
-  }
+  let { code, name, isHost = false, setup, players = [], onStart } = $props();
 </script>
 
 <header>
@@ -48,7 +41,7 @@
     <ul>
       <li><a href="/">Back</a></li>
       {#if isHost}
-        <li><button type="button" onclick={startGame}>Start game</button></li>
+        <li><button type="button" onclick={onStart}>Start game</button></li>
       {/if}
     </ul>
   </nav>
