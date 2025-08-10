@@ -23,17 +23,39 @@ import { Coordinate } from './Coordinate.js';
  */
 
 /**
+ * @typedef {Object} BoardCellJSON
+ * @property {string} coordinate - The coordinate key
+ * @property {import('../pieces/Piece.js').PieceJSON|null} terrain - The terrain piece JSON
+ * @property {import('../pieces/Piece.js').PieceJSON|null} piece - The piece JSON
+ */
+
+/**
+ * @typedef {Object} PlayerStashJSON
+ * @property {string} playerId - The player identifier
+ * @property {import('../pieces/Piece.js').PieceJSON[]} stash - Array of piece JSON objects
+ */
+
+/**
+ * @typedef {Object} ActionHistoryEntry
+ * @property {string} name - The action name
+ * @property {Object} [data] - Action-specific data
+ * @property {string} timestamp - ISO timestamp when action was recorded
+ * @property {number} turnNumber - Turn number when action was performed
+ * @property {string} player - Player who performed the action
+ */
+
+/**
  * @typedef {Object} GameStateJSON
- * @property {Object[]} board
- * @property {string[]} players
- * @property {number} currentPlayerIndex
- * @property {number} turnNumber
- * @property {Object[]} playerStashes
- * @property {Object[]} communityPool
- * @property {Object[]} graveyard
- * @property {Object[]} actionHistory
- * @property {string} createdAt
- * @property {string} lastModified
+ * @property {BoardCellJSON[]} board - Array of board cells with pieces/terrain
+ * @property {string[]} players - Array of player identifiers
+ * @property {number} currentPlayerIndex - Index of current player in players array
+ * @property {number} turnNumber - Current turn number
+ * @property {PlayerStashJSON[]} playerStashes - Array of player stashes
+ * @property {import('../pieces/Piece.js').PieceJSON[]} communityPool - Array of pieces in community pool
+ * @property {import('../pieces/Piece.js').PieceJSON[]} graveyard - Array of pieces in graveyard
+ * @property {ActionHistoryEntry[]} actionHistory - Array of actions performed
+ * @property {string} createdAt - ISO timestamp when game state was created
+ * @property {string} lastModified - ISO timestamp when game state was last modified
  */
 
 /**
