@@ -39,13 +39,16 @@
 ## 🎮 Game Flow Implementation
 
 ### Setup & Lobby
-- [ ] Create game setup screen with configuration options
-  - [ ] Lands per player setting
-  - [ ] Personal pieces per player setting  
-  - [ ] Community pieces per player setting
-- [ ] Implement lobby system with game codes
-- [ ] Add player invitation and joining functionality
-- [ ] Create "Start Game" button for host
+- [x] Create game setup screen with configuration options
+  - [x] Lands per player setting
+  - [x] Personal pieces per player setting  
+  - [x] Community pieces per player setting
+  - [x] Player display name with generated default
+- [x] Implement lobby system with game codes (create/join via URL + code)
+- [x] Add player invitation and joining functionality (code and link)
+- [x] Create "Start Game" button for host
+  - [ ] Wire Start to create a game session/doc and navigate to /game/[code]
+  - [ ] Presence: remove player from lobby on disconnect/leave
 
 ### Game Phases
 - [ ] **Land Placement Phase**
@@ -84,10 +87,40 @@
 - [ ] Design graveyard and pools display
 
 ### Visual Design
-- [ ] Create default art assets for all pieces
-- [ ] Implement custom art upload system
-- [ ] Add art set selection in lobby
+- [ ] Finalize default built-in art sets for all pieces (static assets in repo)
+- [ ] Implement custom art upload system (user-provided sets stored in Firebase Storage)
+- [ ] Add art set selection in lobby (unique per player + host-selected shared set)
 - [ ] Design cohesive visual theme
+
+#### Own Art System (Decision + Tasks)
+- [x] Decision: Default/built-in art are static assets; user uploads live in Firebase Storage
+- [ ] Provide 7 built-in sets: 6 player sets (0–5) + 1 shared/unowned set
+  - [ ] Organize static art at `static/art/{setId}/{Piece}.png` (e.g., `0/Bird.png`)
+  - [ ] Add remaining built-in sets for all current pieces
+- [ ] Art resolver with fallback order
+  - [ ] Priority: player's selected user set → selected built-in set → shared/unowned set → placeholder
+  - [ ] Respect host-selected set for shared/unowned pieces
+  - [ ] Cache/version strategy for static and uploaded assets
+- [ ] Lobby UI behaviors
+  - [ ] Enforce unique art set per player (disable taken sets)
+  - [ ] Host selects the shared/unowned set
+  - [ ] Live conflict resolution as players join/leave or change selection
+- [ ] Upload pipeline for custom sets
+  - [ ] Client validation (type/size), optional square crop/resize (256–512px)
+  - [ ] Convert/store as PNG/WebP under `users/{uid}/artSets/{setId}/{Piece}.png`
+  - [ ] Generate thumbnail/preview
+- [ ] Metadata & persistence
+  - [ ] Firestore: `users/{uid}/artSets/{setId}` (name, pieces present, thumbnail, createdBy)
+  - [ ] Lobby/game: selected set per player + host-selected shared set id
+- [ ] Security & access
+  - [ ] Storage rules: owners write; reads limited to participants of active games using the set
+  - [ ] Firestore rules to list only own sets (no public sharing initially)
+- [ ] Performance & offline
+  - [ ] Preload built-in sets used in current match; cache via Service Worker/SvelteKit
+  - [ ] Use responsive image sizes and appropriate Cache-Control headers
+- [ ] Testing
+  - [ ] Unit tests for resolver fallback (missing piece, missing set, offline)
+  - [ ] Integration tests for lobby uniqueness and host shared-set behavior
 
 ---
 
@@ -126,11 +159,11 @@
 ## 🔥 Firebase Integration
 
 ### Real-time Features
-- [ ] Set up Firebase project and configuration
+- [x] Set up Firebase project and configuration
 - [ ] Implement real-time game state synchronization
 - [ ] Add player connection/disconnection handling
 - [ ] Create game session management
-- [ ] Implement lobby real-time updates
+- [x] Implement lobby real-time updates (players array subscription)
 
 ### Data Storage
 - [ ] Design game state schema
@@ -138,7 +171,12 @@
 - [x] Add game state serialization (JSON) for save/load functionality
 - [x] Create game recreation from serialized data with action replay
 - [ ] Add user account system (anonymous + upgrade)
-- [ ] Create custom art asset storage
+  - [x] Anonymous auth for visitors
+  - [ ] Upgrade/linked accounts
+- [ ] Create custom art asset storage (Firebase Storage under `users/{uid}/artSets/...`)
+- [ ] Firestore metadata for art sets (per-user, per-set), and lobby/game selection fields
+- [ ] Firebase Storage rules for art sets: owner write; scoped read for match participants
+- [ ] Firestore rules to restrict listing/editing art sets to owner
 - [x] Add game replay functionality (action history based)
 
 ---
@@ -155,18 +193,25 @@
 - [x] Test game state recreation from serialized data
 - [ ] Test action undo/redo functionality
  - [ ] Add dedicated server-only test script to avoid browser requirements locally
+ - [x] UI tests: Create/Join navigation and LobbyView render/start callback
+ - [ ] Test art resolver fallback matrix (user set missing piece, built-in missing, offline)
+ - [ ] Test host-shared set selection behavior in resolver
 
 ### Integration Testing
 - [ ] Test multiplayer synchronization
 - [ ] Test Firebase integration
 - [ ] Test UI interactions
 - [ ] Test piece authoring API
+ - [ ] Test lobby art set uniqueness enforcement and conflict resolution
+ - [ ] Test custom set upload flow (validation, storage, metadata)
 
 ### End-to-End Testing (Playwright)
-- [ ] Install Playwright browsers locally
+- [x] Playwright e2e runs locally (Microsoft Edge)
 - [ ] Complete game flow testing
 - [ ] Multi-player game scenarios
 - [ ] Error handling and edge cases
+ - [ ] E2E: create-and-join lobby flow asserts both players visible
+ - [ ] Art set selection end-to-end: unique selection, host shared set, fallback rendering when assets missing
 
 ---
 
@@ -292,6 +337,6 @@
 ---
 
 *Last Updated: August 10, 2025*
-*Status: Core Game Engine Complete with Action History - Phase 1 Implementation Done*
-*Progress: ✅ Game engine with copy-and-test design implemented ✅ Basic pieces (Bird, Soldier) working ✅ Server unit tests passing (browser E2E pending Playwright install) ✅ Action history and game serialization complete ✅ Game state recreation from serialized data working ✅ Variant system implemented with Assassin + Last Man Standing*
-*Next: Implement complex pieces (Builder, Turtle, Bomber), citadel connectivity validation, and initial Standard/Conquest variants*
+*Status: Core engine complete; initial UI & Firebase lobby online*
+*Progress: ✅ Engine with copy-and-test design ✅ Basic pieces (Bird, Soldier) ✅ Unit tests passing ✅ Action history & serialization ✅ Replay scaffold ✅ Variants (Assassin, Last Man Standing) ✅ Home UI with Create/Join ✅ Lobby with realtime players & Start button ✅ E2E smoke on Edge*
+*Next: Wire Start to game session + /game route, add presence cleanup, Firestore rules, board UI with GameEngine data, and E2E for create/join lobby*
