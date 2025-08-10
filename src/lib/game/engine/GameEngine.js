@@ -21,13 +21,17 @@ import { Coordinate } from './Coordinate.js';
 export class GameEngine {
   /**
    * @param {GameState} [initialState] - Initial game state
+   * @param {import('../variants/Variant.js').Variant} [variant] - Game variant (win condition)
    */
-  constructor(initialState = undefined) {
+  constructor(initialState = undefined, variant = undefined) {
     /** @type {GameState} */
     this.gameState = initialState || new GameState();
     
     /** @type {GameState} */
     this.initialState = this.gameState.copy();
+
+    /** @type {import('../variants/Variant.js').Variant | null} */
+    this.variant = variant || null;
   }
 
   /**
@@ -103,6 +107,12 @@ export class GameEngine {
     
     // Update the piece's game state reference
     piece._setGameState(this.gameState);
+
+    // Variant post-action hook
+    if (this.variant?.onAction) {
+      const last = this.gameState.actionHistory[this.gameState.actionHistory.length - 1];
+      try { this.variant.onAction(last, this.gameState); } catch {}
+    }
   }
 
   /**
@@ -216,6 +226,13 @@ export class GameEngine {
     if (this.gameState.hasPiece(coordinate)) {
       throw new RuleViolation('Cannot place piece on occupied square');
     }
+    // Variant restriction: piece availability (class-based only)
+    if (this.variant) {
+      const ctors = this.variant.listAvailablePieces(this.gameState);
+      if (ctors.length > 0 && !this.variant.isPieceInstanceAllowed(piece, this.gameState)) {
+        throw new RuleViolation(`Piece '${piece.type}' is not allowed in variant '${this.variant.name}'`);
+      }
+    }
     
     // Place the piece
     this.gameState.setPiece(coordinate, piece);
@@ -228,6 +245,12 @@ export class GameEngine {
       pieceId: piece.id,
       at: coordinate.toString()
     });
+
+    // Variant post-action hook
+    if (this.variant?.onAction) {
+      const last = this.gameState.actionHistory[this.gameState.actionHistory.length - 1];
+      try { this.variant.onAction(last, this.gameState); } catch {}
+    }
   }
 
   /**
@@ -251,6 +274,27 @@ export class GameEngine {
    */
   getInitialState() {
     return this.initialState;
+  }
+
+  /**
+   * Set or change the active game variant (win condition module)
+   * @param {import('../variants/Variant.js').Variant|null} variant
+   */
+  setVariant(variant) {
+    this.variant = variant || null;
+  }
+
+  /**
+   * Get piece types available in current variant (empty means "no restriction").
+   * @returns {string[]}
+   */
+  /**
+   * Get piece classes available in current variant.
+   * @returns {Array<new (...args: any[]) => import('../pieces/Piece.js').Piece>}
+   */
+  getAvailablePieceClasses() {
+    if (!this.variant) return [];
+    return this.variant.listAvailablePieces(this.gameState);
   }
 
   /**
@@ -300,15 +344,10 @@ export class GameEngine {
    * @returns {{isEnded: boolean, winner: string|null, reason: string|null}}
    */
   checkGameEnd() {
-    // TODO: Implement game end conditions based on Citadel rules
-    // - Check if a player has lost all Citadels
-    // - Check for other win conditions
-    
-    return {
-      isEnded: false,
-      winner: null,
-      reason: null
-    };
+    if (this.variant) {
+      return this.variant.checkEnd(this.gameState);
+    }
+    return { isEnded: false, winner: null, reason: null };
   }
 
   /**

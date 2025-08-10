@@ -53,8 +53,8 @@ export class Move extends Action {
     // Handle capture if there's an enemy piece at the target
     const targetPiece = gameState.getPieceAt(target);
     if (targetPiece && targetPiece.owner !== this.piece.owner) {
-      // Send captured piece to graveyard
-      gameState.graveyard.push(targetPiece);
+  // Send captured piece to graveyard
+  gameState.moveToGraveyard(targetPiece);
     }
     
     // Store the original position for action recording
@@ -73,7 +73,9 @@ export class Move extends Action {
       pieceId: this.piece.id,
       from: fromCoordinate.toString(),
       to: target.toString(),
-      captured: targetPiece ? targetPiece.id : null
+  captured: targetPiece ? targetPiece.id : null,
+  capturedType: targetPiece ? targetPiece.type : null,
+  capturedOwner: targetPiece ? targetPiece.owner : null
     });
   }
 

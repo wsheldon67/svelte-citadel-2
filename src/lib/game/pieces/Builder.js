@@ -52,17 +52,18 @@ export class BuilderMove extends Move {
    * @throws {RuleViolation} If the move is invalid
    */
   check(target, currentGame, newGame) {
-    // Call base class validation (includes basic move rules)
-    super.check(target, currentGame, newGame);
-    
+    // Ensure piece is on the board first for a clearer error
     if (!this.piece.coordinate) {
       throw new RuleViolation('Builder must be on the board to move');
     }
-    
-    // Builder can only move orthogonally adjacent
+
+    // Validate adjacency first so diagonal attempts produce the expected error message
     if (!this.piece.isOrthogonallyAdjacentTo(target)) {
       throw new RuleViolation('Builder can only move to orthogonally adjacent squares');
     }
+
+    // Then run base class validation (water, collisions, turn, etc.)
+    super.check(target, currentGame, newGame);
   }
 
   /**

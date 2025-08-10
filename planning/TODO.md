@@ -21,13 +21,15 @@
 - [x] Implement base `Piece` class with flexible action system
 - [x] Create pluggable action classes (`Move`, `Capture`, `Place`, custom actions)
 - [x] Add comprehensive rule validation system (`RuleViolation` exceptions)
-- [ ] Design game variant system from the ground up
+- [x] Design game variant system from the ground up (Variant base, hooks, class-based availability)
 
 ### Data Models (Extensible Architecture)
 - [x] Create `Board` class (infinite 2D grid with variant support)
 - [x] Implement `Land` tile system with custom properties
 - [x] Create `Water` space handling with piece interactions
 - [ ] Design `Citadel` class with variant-specific rules and connectivity
+  - [x] Implement base `Citadel` piece (type + ownership; can be placed and captured)
+  - [ ] Enforce citadel connectivity validation in engine (path-finding)
 - [x] Implement flexible player management system (2+ players, teams)
 - [x] Create `Graveyard` and dynamic piece pools (Personal/Community/Variant-specific)
 - [x] Design piece property system for complex interactions
@@ -152,6 +154,7 @@
 - [x] Test action history recording and serialization
 - [x] Test game state recreation from serialized data
 - [ ] Test action undo/redo functionality
+ - [ ] Add dedicated server-only test script to avoid browser requirements locally
 
 ### Integration Testing
 - [ ] Test multiplayer synchronization
@@ -160,6 +163,7 @@
 - [ ] Test piece authoring API
 
 ### End-to-End Testing (Playwright)
+- [ ] Install Playwright browsers locally
 - [ ] Complete game flow testing
 - [ ] Multi-player game scenarios
 - [ ] Error handling and edge cases
@@ -169,9 +173,10 @@
 ## 🎯 Game Variants (Core Architecture)
 
 ### Fundamental Variant System
-- [ ] Design pluggable game mode architecture
-- [ ] Create variant-specific rule injection system
-- [ ] Implement dynamic win condition system
+- [x] Design pluggable game mode architecture
+- [x] Create variant-specific rule injection system (Variant.checkEnd/onAction)
+- [x] Implement dynamic win condition system (delegated to Variant)
+- [x] Variant-driven piece availability (class-based only) + optional palette API
 - [ ] Design flexible player/team configuration
 
 ### Initial Target Variants (Implement Early)
@@ -185,6 +190,10 @@
   - [ ] Territory control win conditions  
   - [ ] Modified piece placement rules
   - [ ] Area control mechanics
+
+### Implemented Variants (Current)
+- [x] Assassin (variant): Win immediately on first Citadel capture; also wins if only one player has Citadels
+- [x] Last Man Standing (variant): Winner is the only remaining Citadel owner; draw if none remain
 
 ### Extended Variants (After Core System)
 - [ ] **No Citadel Mode**: Piece elimination victory
@@ -284,5 +293,5 @@
 
 *Last Updated: August 10, 2025*
 *Status: Core Game Engine Complete with Action History - Phase 1 Implementation Done*
-*Progress: ✅ Game engine with copy-and-test design implemented ✅ Basic pieces (Bird, Soldier) working ✅ Full test suite passing ✅ Action history and game serialization complete ✅ Game state recreation from serialized data working*
-*Next: Implement complex pieces (Builder, Turtle, Bomber) and game variants*
+*Progress: ✅ Game engine with copy-and-test design implemented ✅ Basic pieces (Bird, Soldier) working ✅ Server unit tests passing (browser E2E pending Playwright install) ✅ Action history and game serialization complete ✅ Game state recreation from serialized data working ✅ Variant system implemented with Assassin + Last Man Standing*
+*Next: Implement complex pieces (Builder, Turtle, Bomber), citadel connectivity validation, and initial Standard/Conquest variants*

@@ -183,8 +183,18 @@ export class GameState {
    */
   setPiece(coordinate, piece) {
     const cell = this.getCell(coordinate);
+    const prev = cell.piece;
     cell.piece = piece;
     this.board.set(coordinate.key, cell);
+    // keep piece objects in sync
+    if (prev && prev._setCoordinate) {
+      prev._setCoordinate(null);
+      // keep gameState reference; could set null but leaving may aid history/replay
+    }
+    if (piece && piece._setCoordinate && piece._setGameState) {
+      piece._setCoordinate(coordinate);
+      piece._setGameState(this);
+    }
     this._updateLastModified();
   }
 
