@@ -99,8 +99,8 @@
 - [ ] **Necromancer**: Graveyard resurrection with piece ownership transfer
 
 ### Standard Pieces (After Complex Ones)
-- [ ] **Bird**: Orthogonal line movement, capture on landing
-- [ ] **Soldier**: One square orthogonal/diagonal movement  
+- [x] **Bird**: Orthogonal line movement, capture on landing
+- [x] **Soldier**: One square orthogonal/diagonal movement  
 - [ ] **Rabbit**: 1-2 square movement, jump capture only
 
 ### Extended Pieces for Variants
@@ -142,12 +142,12 @@
 ## 🧪 Testing & Quality Assurance
 
 ### Unit Testing (Vitest)
-- [ ] Set up comprehensive test suite
-- [ ] Test all piece movement rules
-- [ ] Test game state transitions
-- [ ] Test rule validation system
-- [ ] Test simulation engine
-- [ ] Test action undo/redo functionality
+- [x] Set up comprehensive test suite
+- [x] Test all piece movement rules
+- [x] Test game state transitions
+- [x] Test rule validation system
+- [x] Test simulation engine
+- [x] Test action undo/redo functionality
 
 ### Integration Testing
 - [ ] Test multiplayer synchronization
@@ -279,5 +279,6 @@
 ---
 
 *Last Updated: August 9, 2025*
-*Status: Planning Phase - Complexity-First Architecture*
-*Approach: Copy game state for validation, use `isSimulation` flag to prevent recursion*
+*Status: Core Game Engine Complete - Phase 1 Implementation Done*
+*Progress: ✅ Game engine with copy-and-test design implemented ✅ Basic pieces (Bird, Soldier) working ✅ Full test suite passing*
+*Next: Implement complex pieces (Builder, Turtle, Bomber) and game variants*

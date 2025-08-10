@@ -31,6 +31,8 @@ In a standard game, each of the two players has 1 Citadel.
 
 # Pieces
 
+Generally, pieces are placed on top of the Land/Turtle layer. The obvious exception is Turtles, which like Land, are placed in Water.
+
 ## Bird
 
 Movement: The Bird moves in a straight line, either horizontally or vertically, for as many tiles as you want. It cannot move diagonally.
