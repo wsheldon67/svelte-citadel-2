@@ -47,7 +47,7 @@
 - [x] Implement lobby system with game codes (create/join via URL + code)
 - [x] Add player invitation and joining functionality (code and link)
 - [x] Create "Start Game" button for host
-  - [ ] Wire Start to create a game session/doc and navigate to /game/[code]
+  - [x] Wire Start to create a game session/doc and navigate to /game/[code]
   - [ ] Presence: remove player from lobby on disconnect/leave
 
 ### Game Phases

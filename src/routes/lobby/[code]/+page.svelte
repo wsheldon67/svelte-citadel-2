@@ -15,6 +15,23 @@
   let players = $state([]);
   /** @type {import('firebase/firestore').Unsubscribe | null} */
   let unsub = null;
+  let navigated = $state(false);
+
+  function navigateToGame() {
+    if (navigated) return;
+    navigated = true;
+    try {
+      const params = new URLSearchParams({
+        pc: String(setup?.playerCount || 2),
+        lpp: String(setup?.landsPerPlayer || 3),
+        ppp: String(setup?.personalPiecesPerPlayer || 3),
+        cpp: String(setup?.communityPiecesPerPlayer || 3),
+        variant: String(setup?.variant || '')
+      });
+      const url = `/game/${code}?${params}`;
+      import('$app/navigation').then(({ goto }) => goto(url)).catch(() => { location.href = url; });
+    } catch {}
+  }
 
   async function ensureAnon() {
     if (!auth.currentUser) {
@@ -75,25 +92,16 @@
   unsub = onSnapshot(lobbyRef, (snap) => {
       const d = snap.data();
       players = (d?.players || []);
+      // If host has started the game, everyone moves to land placement
+      if (d?.status === 'started') navigateToGame();
     });
   }
 
   function onStart() {
     const lobbyRef = doc(db, 'lobbies', code);
     updateDoc(lobbyRef, { status: 'started', updatedAt: serverTimestamp() });
-    // Navigate to game setup with query carrying setup options
-    try {
-      const params = new URLSearchParams({
-        pc: String(setup?.playerCount || 2),
-        lpp: String(setup?.landsPerPlayer || 3),
-        ppp: String(setup?.personalPiecesPerPlayer || 3),
-        cpp: String(setup?.communityPiecesPerPlayer || 3),
-        variant: String(setup?.variant || '')
-      });
-      const url = `/game/${code}?${params}`;
-      // Prefer client navigation; fallback to location
-      import('$app/navigation').then(({ goto }) => goto(url)).catch(() => { location.href = url; });
-    } catch {}
+    // Optimistically navigate host; others will navigate via snapshot
+    navigateToGame();
   }
 
   onMount(() => {
