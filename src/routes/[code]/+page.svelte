@@ -51,18 +51,7 @@
   // Derived values
   const myId = $derived(auth.currentUser?.uid || '');
   const isHost = $derived(gameState.isHost(myId));
-  const players = $derived(gameState.players.map(id => ({ id, name: getPlayerName(id) })));
-
-  // Player name mapping (since we're storing minimal data now)
-  let playerNames = $state(new Map());
-
-  /**
-   * @param {string} playerId
-   * @returns {string}
-   */
-  function getPlayerName(playerId) {
-    return playerNames.get(playerId) || `Player ${playerId.slice(-4)}`;
-  }
+  const players = $derived(gameState.playerInfo);
 
   // Authentication helper
   async function ensureAnon() {
@@ -106,14 +95,10 @@
       initState.setPhase('lobby');
       initState.setSetup(pendingCreation.setup);
       initState.setHost(auth.currentUser?.uid || '');
-      initState.addPlayer(auth.currentUser?.uid || '');
-      
-      // Store player name
-      playerNames.set(auth.currentUser?.uid || '', pendingCreation.hostName);
+      initState.addPlayer(auth.currentUser?.uid || '', pendingCreation.hostName);
 
       await setDoc(gameRef, {
         state: initState.toJSON(),
-        playerNames: { [auth.currentUser?.uid || '']: pendingCreation.hostName },
         updatedAt: serverTimestamp()
       });
     } else {
@@ -121,23 +106,14 @@
       const data = gameSnap.data();
       const existingState = GameState.fromJSON(data.state, pieceFromJSON);
       
-      // Restore player names
-      if (data.playerNames) {
-        for (const [id, name] of Object.entries(data.playerNames)) {
-          playerNames.set(id, name);
-        }
-      }
-      
       // Add current user if not already a player and game is in lobby
       const myId = auth.currentUser?.uid || '';
       if (!existingState.players.includes(myId) && existingState.phase === 'lobby') {
         const playerName = pendingJoin?.playerName || `Player ${Date.now().toString().slice(-4)}`;
-        existingState.addPlayer(myId);
-        playerNames.set(myId, playerName);
+        existingState.addPlayer(myId, playerName);
         
         await updateDoc(gameRef, {
           state: existingState.toJSON(),
-          [`playerNames.${myId}`]: playerName,
           updatedAt: serverTimestamp()
         });
       }
@@ -149,14 +125,6 @@
       if (!data) return;
       
       gameState = GameState.fromJSON(data.state, pieceFromJSON);
-      
-      // Update player names
-      if (data.playerNames) {
-        for (const [id, name] of Object.entries(data.playerNames)) {
-          playerNames.set(id, name);
-        }
-      }
-      
       isLoading = false;
     });
   }
@@ -258,7 +226,7 @@
 {:else if gameState.phase === 'lobby'}
   <LobbyView 
     {code} 
-    name={getPlayerName(myId)} 
+    name={gameState.getPlayerName(myId)} 
     {isHost} 
     setup={gameState.setup} 
     {players} 

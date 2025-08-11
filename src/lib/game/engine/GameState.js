@@ -45,9 +45,16 @@ import { Coordinate } from './Coordinate.js';
  */
 
 /**
+ * @typedef {Object} PlayerInfo
+ * @property {string} id - The player identifier
+ * @property {string} name - The player display name
+ */
+
+/**
  * @typedef {Object} GameStateJSON
  * @property {BoardCellJSON[]} board - Array of board cells with pieces/terrain
  * @property {string[]} players - Array of player identifiers
+ * @property {PlayerInfo[]} playerInfo - Array of player info objects with id and name
  * @property {number} currentPlayerIndex - Index of current player in players array
  * @property {number} turnNumber - Current turn number
  * @property {PlayerStashJSON[]} playerStashes - Array of player stashes
@@ -78,6 +85,9 @@ export class GameState {
     
     /** @type {string[]} */
     this.players = [];
+    
+    /** @type {PlayerInfo[]} */
+    this.playerInfo = [];
     
     /** @type {number} */
     this.currentPlayerIndex = 0;
@@ -182,6 +192,7 @@ export class GameState {
     
     // Copy arrays and maps
     newState.players = [...this.players];
+    newState.playerInfo = this.playerInfo.map(info => ({ ...info }));
     newState.currentPlayerIndex = this.currentPlayerIndex;
     newState.turnNumber = this.turnNumber;
     
@@ -475,13 +486,37 @@ export class GameState {
   /**
    * Add a player to the game
    * @param {string} playerId
+   * @param {string} [playerName] - Optional display name, defaults to truncated ID
    */
-  addPlayer(playerId) {
+  addPlayer(playerId, playerName) {
     if (!this.players.includes(playerId)) {
       this.players.push(playerId);
       this.playerStashes.set(playerId, []);
+      
+      // Add to playerInfo array
+      const name = playerName || `Player ${playerId.slice(-4)}`;
+      this.playerInfo.push({ id: playerId, name });
     }
     this._updateLastModified();
+  }
+
+  /**
+   * Get player info by ID
+   * @param {string} playerId
+   * @returns {PlayerInfo|undefined}
+   */
+  getPlayerInfo(playerId) {
+    return this.playerInfo.find(info => info.id === playerId);
+  }
+
+  /**
+   * Get player name by ID
+   * @param {string} playerId
+   * @returns {string}
+   */
+  getPlayerName(playerId) {
+    const info = this.getPlayerInfo(playerId);
+    return info ? info.name : `Player ${playerId.slice(-4)}`;
   }
 
   /**
@@ -546,6 +581,7 @@ export class GameState {
     return {
       board: boardArray,
       players: this.players,
+      playerInfo: this.playerInfo,
       currentPlayerIndex: this.currentPlayerIndex,
       turnNumber: this.turnNumber,
       playerStashes: playerStashesArray,
@@ -580,6 +616,7 @@ export class GameState {
     
     // Restore other properties
     state.players = data.players;
+    state.playerInfo = data.playerInfo || [];
     state.currentPlayerIndex = data.currentPlayerIndex;
     state.turnNumber = data.turnNumber;
     
