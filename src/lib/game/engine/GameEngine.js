@@ -5,7 +5,7 @@ import { Coordinate } from './Coordinate.js';
 /**
  * @typedef {Object} ValidAction
  * @property {import('../actions/Action.js').Action} action
- * @property {Coordinate[]} targets
+ * @property {import('./Cell.js').Cell[]} targets
  */
 
 /**
@@ -38,12 +38,12 @@ export class GameEngine {
    * Validate an action without applying it to the game state
    * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
    * @param {import('../actions/Action.js').Action} action - The action to validate
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('./Cell.js').Cell} targetCell - The target cell
    * @returns {boolean} True if the action is valid
    */
-  validateAction(piece, action, target) {
+  validateAction(piece, action, targetCell) {
     try {
-      this.checkAction(piece, action, target);
+      this.checkAction(piece, action, targetCell);
       return true;
     } catch (error) {
       if (error instanceof RuleViolation) {
@@ -57,10 +57,10 @@ export class GameEngine {
    * Check if an action is valid and throw RuleViolation if not
    * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
    * @param {import('../actions/Action.js').Action} action - The action to check
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('./Cell.js').Cell} targetCell - The target cell
    * @throws {RuleViolation} If the action is invalid
    */
-  checkAction(piece, action, target) {
+  checkAction(piece, action, targetCell) {
     // Create a simulation copy of the game state
     const simulationState = this.gameState.copy({ isSimulation: true });
     
@@ -69,6 +69,9 @@ export class GameEngine {
     if (!simulationPiece) {
       throw new RuleViolation('Piece not found on the board');
     }
+
+    // Get the corresponding cell in the simulation state
+    const simulationTargetCell = simulationState.getCell(targetCell.coordinate);
     
     // Create the action instance for the simulation piece
     /** @type {typeof import('../actions/Action.js').Action} */
@@ -83,27 +86,28 @@ export class GameEngine {
       throw new RuleViolation('Piece not found in new state');
     }
     const newStateAction = new ActionClass(newStatePiece);
+    const newStateTargetCell = newState.getCell(targetCell.coordinate);
     
     // Apply the action to the new state to simulate the result
-    newStateAction.perform(target, newState);
+    newStateAction.perform(newStateTargetCell, newState);
     
     // Now check the action validity using the original and modified states
-    simulationAction.check(target, simulationState, newState);
+    simulationAction.check(simulationTargetCell, simulationState, newState);
   }
 
   /**
    * Execute an action on the game state
    * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
    * @param {import('../actions/Action.js').Action} action - The action to execute
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('./Cell.js').Cell} targetCell - The target cell
    * @throws {RuleViolation} If the action is invalid
    */
-  executeAction(piece, action, target) {
+  executeAction(piece, action, targetCell) {
     // First validate the action
-    this.checkAction(piece, action, target);
+    this.checkAction(piece, action, targetCell);
     
     // If validation passes, apply the action to the real game state
-    action.perform(target, this.gameState);
+    action.perform(targetCell, this.gameState);
     
     // Update the piece's game state reference
     piece._setGameState(this.gameState);
@@ -151,7 +155,7 @@ export class GameEngine {
    * Get valid targets for an action by iterating over board coordinates and testing with check()
    * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
    * @param {import('../actions/Action.js').Action} action - The action to get targets for
-   * @returns {Coordinate[]} Array of valid target coordinates
+   * @returns {import('./Cell.js').Cell[]} Array of valid target cells
    */
   getValidTargetsForAction(piece, action) {
     const validTargets = [];
@@ -168,11 +172,12 @@ export class GameEngine {
     // Iterate over all coordinates in the extended area
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
-        const target = new Coordinate(x, y);
+        const coord = new Coordinate(x, y);
+        const targetCell = this.gameState.getCell(coord);
         
         try {
-          this.checkAction(piece, action, target);
-          validTargets.push(target);
+          this.checkAction(piece, action, targetCell);
+          validTargets.push(targetCell);
         } catch (error) {
           if (error instanceof RuleViolation) {
             // Invalid target, skip it

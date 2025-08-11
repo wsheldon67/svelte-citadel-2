@@ -16,12 +16,12 @@ export class Action {
 
   /**
    * Check if the action is valid for the given target
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the action
    * @throws {RuleViolation} If the action is invalid
    */
-  check(target, currentGame, newGame) {
+  check(targetCell, currentGame, newGame) {
     // Base implementation - subclasses should override and call super.check()
     if (!this.piece.coordinate) {
       throw new RuleViolation('Piece must be placed on the board to perform actions');
@@ -34,22 +34,12 @@ export class Action {
 
   /**
    * Perform the action
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
-  perform(target, gameState) {
+  perform(targetCell, gameState) {
     // Base implementation - subclasses should override
     throw new Error('Action.perform() must be implemented by subclasses');
-  }
-
-  /**
-   * Get all valid targets for this action
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    // Base implementation - subclasses should override
-    return [];
   }
 
   /**

@@ -57,9 +57,10 @@ describe('Builder', () => {
       gameState.setTerrain(targetCoord, new Piece({ type: 'Land', owner: 'neutral' }));
 
       const move = new BuilderMove(builder);
+      const targetCell = gameState.getCell(targetCoord);
       
       expect(() => {
-        move.check(targetCoord, gameState, gameState);
+        move.check(targetCell, gameState, gameState);
       }).not.toThrow();
     });
 
@@ -71,9 +72,10 @@ describe('Builder', () => {
       gameState.setPiece(builderCoord, builder);
 
       const move = new BuilderMove(builder);
+      const targetCell = gameState.getCell(targetCoord);
       
       expect(() => {
-        move.check(targetCoord, gameState, gameState);
+        move.check(targetCell, gameState, gameState);
       }).toThrow('Builder can only move to orthogonally adjacent squares');
     });
   });
@@ -92,7 +94,8 @@ describe('Builder', () => {
       gameState.addToCommunityPool(newLand);
 
       const action = new BuilderPlaceTerrain(builder);
-      action.perform(targetCoord, gameState);
+      const targetCell = gameState.getCell(targetCoord);
+      action.perform(targetCell, gameState);
 
   expect(gameState.hasTerrain(targetCoord)).toBe(true);
   const terrain = gameState.getTerrainAt(targetCoord);
@@ -118,7 +121,8 @@ describe('Builder', () => {
       gameState.addToCommunityPool(newLand);
 
       const action = new BuilderPlaceTerrain(builder);
-      action.perform(targetCoord, gameState);
+      const targetCell = gameState.getCell(targetCoord);
+      action.perform(targetCell, gameState);
 
       expect(gameState.hasTerrain(targetCoord)).toBe(true);
       expect(gameState.getPieceAt(targetCoord)).toBeNull();
@@ -142,7 +146,8 @@ describe('Builder', () => {
       gameState.setPiece(targetCoord, enemy);
 
       const action = new BuilderRemoveTerrain(builder);
-      action.perform(targetCoord, gameState);
+      const targetCell = gameState.getCell(targetCoord);
+      action.perform(targetCell, gameState);
 
       expect(gameState.hasTerrain(targetCoord)).toBe(false);
       expect(gameState.getPieceAt(targetCoord)).toBeNull();
@@ -158,7 +163,8 @@ describe('Builder', () => {
       gameState.setPiece(builderCoord, builder);
 
       const action = new BuilderRemoveTerrain(builder);
-      action.perform(builderCoord, gameState);
+      const builderCell = gameState.getCell(builderCoord);
+      action.perform(builderCell, gameState);
 
       expect(gameState.hasTerrain(builderCoord)).toBe(false);
       expect(gameState.getPieceAt(builderCoord)).toBeNull();
@@ -182,7 +188,8 @@ describe('Builder', () => {
       gameState.setTerrain(sourceCoord, movableLand);
 
       const action = new BuilderMoveTerrain(builder, sourceCoord);
-      action.perform(targetCoord, gameState);
+      const targetCell = gameState.getCell(targetCoord);
+      action.perform(targetCell, gameState);
 
       expect(gameState.hasTerrain(sourceCoord)).toBe(false);
       expect(gameState.hasTerrain(targetCoord)).toBe(true);
@@ -207,7 +214,8 @@ describe('Builder', () => {
       gameState.setPiece(targetCoord, enemy);
 
       const action = new BuilderMoveTerrain(builder, sourceCoord);
-      action.perform(targetCoord, gameState);
+      const targetCell = gameState.getCell(targetCoord);
+      action.perform(targetCell, gameState);
 
       expect(gameState.hasTerrain(targetCoord)).toBe(true);
       expect(gameState.getPieceAt(targetCoord)).toBeNull();

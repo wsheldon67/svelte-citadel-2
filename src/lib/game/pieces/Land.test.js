@@ -158,21 +158,23 @@ describe('LandPlace', () => {
   describe('check', () => {
     it('should allow placement on empty water (first Land piece)', () => {
       const target = new Coordinate(0, 0);
+      const targetCell = mockGameState.getCell(target);
 
       // Should not throw for first piece
       expect(() => {
-        landPlace.check(target, mockGameState, mockGameState);
+        landPlace.check(targetCell, mockGameState, mockGameState);
       }).not.toThrow();
     });
 
     it('should prevent placement where terrain already exists', () => {
       const target = new Coordinate(0, 0);
+      const targetCell = mockGameState.getCell(target);
 
       // Mock terrain existing at target
       mockGameState.hasTerrain = (coord) => coord.x === 0 && coord.y === 0;
 
       expect(() => {
-        landPlace.check(target, mockGameState, mockGameState);
+        landPlace.check(targetCell, mockGameState, mockGameState);
       }).toThrow(RuleViolation);
     });
 

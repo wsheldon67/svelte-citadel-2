@@ -46,24 +46,24 @@ export class Builder extends Piece {
 export class BuilderMove extends Move {
   /**
    * Check if the target is a valid move for the Builder
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target tile to check
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell to check
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the move
    * @throws {RuleViolation} If the move is invalid
    */
-  check(target, currentGame, newGame) {
+  check(targetCell, currentGame, newGame) {
     // Ensure piece is on the board first for a clearer error
     if (!this.piece.coordinate) {
       throw new RuleViolation('Builder must be on the board to move');
     }
 
     // Validate adjacency first so diagonal attempts produce the expected error message
-    if (!this.piece.isOrthogonallyAdjacentTo(target)) {
+    if (!this.piece.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
       throw new RuleViolation('Builder can only move to orthogonally adjacent squares');
     }
 
     // Then run base class validation (water, collisions, turn, etc.)
-    super.check(target, currentGame, newGame);
+    super.check(targetCell, currentGame, newGame);
   }
 
   /**
@@ -91,13 +91,13 @@ export class BuilderMoveTerrain extends Action {
 
   /**
    * Check if the terrain movement is valid
-   * @param {Coordinate} target - The target coordinate for the land tile
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell for the land tile
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the action
    * @throws {RuleViolation} If the action is invalid
    */
-  check(target, currentGame, newGame) {
-    super.check(target, currentGame, newGame);
+  check(targetCell, currentGame, newGame) {
+    super.check(targetCell, currentGame, newGame);
 
     if (!this.sourceCoordinate) {
       throw new RuleViolation('Source coordinate must be specified for terrain movement');
@@ -115,17 +115,17 @@ export class BuilderMoveTerrain extends Action {
     }
 
     // Target must be orthogonally adjacent to the source terrain
-    if (!this.sourceCoordinate.isOrthogonallyAdjacentTo(target)) {
+    if (!this.sourceCoordinate.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
       throw new RuleViolation('Land tile can only be moved to orthogonally adjacent positions');
     }
   }
 
   /**
    * Perform the terrain movement
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
-  perform(target, gameState) {
+  perform(targetCell, gameState) {
     if (!this.sourceCoordinate) {
       throw new RuleViolation('Source coordinate must be specified for terrain movement');
     }
@@ -141,14 +141,13 @@ export class BuilderMoveTerrain extends Action {
     }
 
     // If target has a piece, capture it using Cell utilities
-    const targetCell = gameState.getCell(target);
     if (targetCell.hasPiece() && targetCell.piece) {
       gameState.moveToGraveyard(targetCell.piece);
       targetCell.setPiece(null);
     }
 
     // Place the terrain at the target
-    gameState.setTerrain(target, terrain);
+    gameState.setTerrain(targetCell.coordinate, terrain);
   }
 
   /**
@@ -166,21 +165,20 @@ export class BuilderMoveTerrain extends Action {
 export class BuilderRemoveTerrain extends Action {
   /**
    * Check if the terrain removal is valid
-   * @param {Coordinate} target - The coordinate of the terrain to remove
+   * @param {import('../engine/Cell.js').Cell} targetCell - The cell with terrain to remove
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the action
    * @throws {RuleViolation} If the action is invalid
    */
-  check(target, currentGame, newGame) {
-    super.check(target, currentGame, newGame);
+  check(targetCell, currentGame, newGame) {
+    super.check(targetCell, currentGame, newGame);
 
     // Builder must be orthogonally adjacent to the target
-    if (!this.piece.isOrthogonallyAdjacentTo(target)) {
+    if (!this.piece.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
       throw new RuleViolation('Builder must be orthogonally adjacent to the terrain to remove');
     }
 
     // Target must have terrain (land tile)
-    const targetCell = currentGame.getCell(target);
     if (!targetCell.hasTerrainOfType('Land')) {
       throw new RuleViolation('Target coordinate must have a land tile to remove');
     }
@@ -188,15 +186,15 @@ export class BuilderRemoveTerrain extends Action {
 
   /**
    * Perform the terrain removal
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
-  perform(target, gameState) {
+  perform(targetCell, gameState) {
     // Check if Builder is removing its own tile (edge case)
-    const builderOnTarget = this.piece.coordinate && this.piece.coordinate.equals(target);
+    const builderOnTarget = this.piece.coordinate && this.piece.coordinate.equals(targetCell.coordinate);
     
     // Remove all contents from the target cell
-    gameState.removeCellContents(target);
+    gameState.removeCellContents(targetCell.coordinate);
 
     // If Builder was on the removed tile, move it to graveyard too
     if (builderOnTarget) {
@@ -220,21 +218,20 @@ export class BuilderRemoveTerrain extends Action {
 export class BuilderPlaceTerrain extends Action {
   /**
    * Check if the terrain placement is valid
-   * @param {Coordinate} target - The coordinate to place the terrain
+   * @param {import('../engine/Cell.js').Cell} targetCell - The cell to place the terrain
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the action
    * @throws {RuleViolation} If the action is invalid
    */
-  check(target, currentGame, newGame) {
-    super.check(target, currentGame, newGame);
+  check(targetCell, currentGame, newGame) {
+    super.check(targetCell, currentGame, newGame);
 
     // Builder must be orthogonally adjacent to the target
-    if (!this.piece.isOrthogonallyAdjacentTo(target)) {
+    if (!this.piece.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
       throw new RuleViolation('Builder must be orthogonally adjacent to the placement location');
     }
 
     // Target must be water (no terrain)
-    const targetCell = currentGame.getCell(target);
     if (targetCell.hasTerrain()) {
       throw new RuleViolation('Cannot place terrain on existing terrain');
     }
@@ -248,10 +245,10 @@ export class BuilderPlaceTerrain extends Action {
 
   /**
    * Perform the terrain placement
-   * @param {Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
-  perform(target, gameState) {
+  perform(targetCell, gameState) {
     // Get land from community pool
     const landTile = gameState.getLandFromCommunityPool();
     if (!landTile) {
@@ -259,14 +256,13 @@ export class BuilderPlaceTerrain extends Action {
     }
 
     // If target has a piece on water, capture it using Cell utilities
-    const targetCell = gameState.getCell(target);
     if (targetCell.hasPiece() && targetCell.piece) {
       gameState.moveToGraveyard(targetCell.piece);
       targetCell.setPiece(null);
     }
 
     // Place the land tile
-    gameState.setTerrain(target, landTile);
+    gameState.setTerrain(targetCell.coordinate, landTile);
   }
 
   /**

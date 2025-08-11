@@ -44,26 +44,26 @@ export class Bird extends Piece {
 export class BirdMove extends Move {
   /**
    * Check if the target is a valid move for the Bird
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target tile to check
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell to check
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the move
    * @throws {RuleViolation} If the move is invalid
    */
-  check(target, currentGame, newGame) {
+  check(targetCell, currentGame, newGame) {
     // Call base class validation (includes basic move rules)
-    super.check(target, currentGame, newGame);
+    super.check(targetCell, currentGame, newGame);
     
     if (!this.piece.coordinate) {
       throw new RuleViolation('Bird must be on the board to move');
     }
     
     // Bird can only move orthogonally (no gaps allowed for adjacency, but line movement allowed)
-    if (!this.piece.isOrthogonalTo(target, { gapsAllowed: true })) {
+    if (!this.piece.isOrthogonalTo(targetCell.coordinate, { gapsAllowed: true })) {
       throw new RuleViolation('Bird can only move to orthogonal tiles');
     }
     
     // Check if the path is clear (no pieces blocking the way)
-    if (!this.piece.isPathClear(target)) {
+    if (!this.piece.isPathClear(targetCell.coordinate)) {
       throw new RuleViolation('Bird cannot jump over pieces');
     }
   }

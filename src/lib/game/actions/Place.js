@@ -9,29 +9,29 @@ import { Coordinate } from '../engine/Coordinate.js';
 export class Place extends Action {
   /**
    * Check if the placement is valid
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after placement
    * @throws {RuleViolation} If the placement is invalid
    */
-  check(target, currentGame, newGame) {
+  check(targetCell, currentGame, newGame) {
     // Skip base class validation since placement doesn't require the piece to already be on the board
-    // super.check(target, currentGame, newGame);
+    // super.check(targetCell, currentGame, newGame);
     
     // Check if there's already a piece at this location
-    if (currentGame.hasPiece(target)) {
+    if (targetCell.hasPiece()) {
       throw new RuleViolation('Cannot place piece where a piece already exists');
     }
     
     // Check terrain layer stacking rules
     if (this.piece.type === 'Land') {
       // Land is terrain - cannot place where terrain already exists
-      if (currentGame.hasTerrain(target)) {
+      if (targetCell.hasTerrain()) {
         throw new RuleViolation('Cannot place terrain where terrain already exists');
       }
     } else {
       // Regular pieces need terrain to place on
-      if (!currentGame.hasTerrain(target) && !this.piece.isTerrain()) {
+      if (!targetCell.hasTerrain() && !this.piece.isTerrain()) {
         throw new RuleViolation('Cannot place piece where no terrain exists (pieces need to be on land)');
       }
     }
@@ -39,51 +39,20 @@ export class Place extends Action {
   
   /**
    * Perform the placement action
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
-  perform(target, gameState) {
+  perform(targetCell, gameState) {
     // Create a copy of the piece and set its coordinate
     const placedPiece = this.piece.copy();
-    placedPiece._setCoordinate(target);
+    placedPiece._setCoordinate(targetCell.coordinate);
     
     // Place the piece in the appropriate layer
     if (this.piece.type === 'Land') {
-      gameState.setTerrain(target, placedPiece);
+      gameState.setTerrain(targetCell.coordinate, placedPiece);
     } else {
-      gameState.setPiece(target, placedPiece);
+      gameState.setPiece(targetCell.coordinate, placedPiece);
     }
-  }
-
-  /**
-   * Get all valid targets for placing this piece
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {import('../engine/Coordinate.js').Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    const validTargets = [];
-    
-    // Base implementation: find all empty coordinates
-    // Subclasses can override for more specific placement rules
-    
-    // For now, let's return a reasonable grid around existing pieces/terrain
-    const bounds = this.getSearchBounds(gameState);
-    
-    for (let x = bounds.minX; x <= bounds.maxX; x++) {
-      for (let y = bounds.minY; y <= bounds.maxY; y++) {
-        const coord = new Coordinate(x, y);
-        try {
-          // Create a temporary game state to test placement
-          const testGame = gameState.copy();
-          this.check(coord, gameState, testGame);
-          validTargets.push(coord);
-        } catch (violation) {
-          // Invalid placement, skip this coordinate
-        }
-      }
-    }
-    
-    return validTargets;
   }
 
   /**

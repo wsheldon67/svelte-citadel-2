@@ -76,12 +76,12 @@ async function demo() {
         /** @type {typeof import('./lib/game/actions/Action.js').Action} */
         const ActionClass = /** @type {any} */ (cell.piece.getActions()[0]);
         const action = new ActionClass(cell.piece);
-        const targets = action.getValidTargets(gameState);
+        const targets = engine.getValidTargetsForAction(cell.piece, action);
         console.log(`    Potential targets: ${targets.length}`);
         
         if (targets.length > 0) {
           const firstTarget = targets[0];
-          console.log(`    Testing move to ${firstTarget.toString()}:`);
+          console.log(`    Testing move to ${firstTarget.coordinate.toString()}:`);
           try {
             engine.checkAction(cell.piece, action, firstTarget);
             console.log(`      ✓ Valid move`);
@@ -111,7 +111,7 @@ async function demo() {
       if (moveAction.targets.length > 0) {
         const target = moveAction.targets[0];
         
-        console.log(`\nAlice moves her Bird to ${target.toString()}`);
+        console.log(`\nAlice moves her Bird to ${target.coordinate.toString()}`);
         try {
           engine.executeAction(birdData.piece, moveAction.action, target);
           console.log('✓ Move executed successfully');

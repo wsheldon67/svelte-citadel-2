@@ -111,8 +111,8 @@ describe('Piece Movement', () => {
     
     // Bird should be able to move orthogonally
     const validTargets = actions[0].targets;
-    expect(validTargets.some(t => t.x === 1 && t.y === 0)).toBe(true);
-    expect(validTargets.some(t => t.x === 0 && t.y === 1)).toBe(true);
+    expect(validTargets.some(t => t.coordinate.x === 1 && t.coordinate.y === 0)).toBe(true);
+    expect(validTargets.some(t => t.coordinate.x === 0 && t.coordinate.y === 1)).toBe(true);
   });
 
   it('should validate Soldier movement', () => {
@@ -135,8 +135,9 @@ describe('Piece Movement', () => {
     
     const actions = engine.getValidActionsForPiece(bird);
     const moveAction = actions[0].action;
+    const targetCell = gameState.getCell(targetCoord);
     
-    engine.executeAction(bird, moveAction, targetCoord);
+    engine.executeAction(bird, moveAction, targetCell);
     
     expect(gameState.getPieceAt(startCoord)).toBeNull();
     expect(gameState.getPieceAt(targetCoord)).toBe(bird);
@@ -154,7 +155,7 @@ describe('Piece Movement', () => {
     const moveAction = actions[0].action;
     
     // Bird1 should be able to capture Bird2
-    engine.executeAction(bird1, moveAction, new Coordinate(2, 0));
+    engine.executeAction(bird1, moveAction, gameState.getCell(new Coordinate(2, 0)));
     
     expect(gameState.getPieceAt(new Coordinate(2, 0))).toBe(bird1);
     expect(gameState.graveyard).toContain(bird2);
@@ -171,7 +172,7 @@ describe('Piece Movement', () => {
     const moveAction = actions[0].action;
     
     expect(() => {
-      engine.executeAction(bird1, moveAction, new Coordinate(1, 0));
+      engine.executeAction(bird1, moveAction, gameState.getCell(new Coordinate(1, 0)));
     }).toThrow(RuleViolation);
   });
 });
@@ -242,7 +243,7 @@ describe('Action History and Replay', () => {
     // Move bird1 to capture bird2
     const actions = originalEngine.getValidActionsForPiece(bird1);
     const moveAction = actions[0].action;
-    originalEngine.executeAction(bird1, moveAction, new Coordinate(2, 0));
+    originalEngine.executeAction(bird1, moveAction, originalEngine.gameState.getCell(new Coordinate(2, 0)));
 
     // Verify we have recorded actions
     expect(originalState.actionHistory.length).toBe(3); // 2 placements + 1 move
@@ -317,7 +318,7 @@ describe('Action History and Replay', () => {
     
     // Move bird
     const actions = engine.getValidActionsForPiece(bird);
-    engine.executeAction(bird, actions[0].action, new Coordinate(1, 0));
+    engine.executeAction(bird, actions[0].action, gameState.getCell(new Coordinate(1, 0)));
     
     // Verify action history
     expect(gameState.actionHistory.length).toBe(3); // 2 placements + 1 move

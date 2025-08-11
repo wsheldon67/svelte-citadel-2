@@ -8,29 +8,28 @@ import { RuleViolation } from '../engine/RuleViolation.js';
 export class Move extends Action {
   /**
    * Check if the target is a valid move destination
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after the move
    * @throws {RuleViolation} If the move is invalid
    */
-  check(target, currentGame, newGame) {
+  check(targetCell, currentGame, newGame) {
     // Call base class validation
-    super.check(target, currentGame, newGame);
+    super.check(targetCell, currentGame, newGame);
     
     // Can't move to the same position
-    if (this.piece.coordinate && this.piece.coordinate.equals(target)) {
+    if (this.piece.coordinate && this.piece.coordinate.equals(targetCell.coordinate)) {
       throw new RuleViolation('Cannot move to the same position');
     }
     
     // Must have terrain (land or turtle) to move to, unless the piece itself can go in water
-    if (!currentGame.hasTerrain(target) && !this.canMoveToWater()) {
+    if (!targetCell.hasTerrain() && !this.canMoveToWater()) {
       throw new RuleViolation('Cannot move to water without terrain');
     }
     
     // Check for piece collision (unless this move captures)
-    const targetPiece = currentGame.getPieceAt(target);
-    if (targetPiece) {
-      if (targetPiece.owner === this.piece.owner) {
+    if (targetCell.hasPiece()) {
+      if (targetCell.getPieceOwner() === this.piece.owner) {
         throw new RuleViolation('Cannot move to a square occupied by your own piece');
       }
       // If enemy piece, this would be a capture - validate capture rules
@@ -42,19 +41,19 @@ export class Move extends Action {
 
   /**
    * Perform the move action
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
-  perform(target, gameState) {
+  perform(targetCell, gameState) {
     if (!this.piece.coordinate) {
       throw new Error('Piece must be on the board to move');
     }
     
     // Handle capture if there's an enemy piece at the target
-    const targetPiece = gameState.getPieceAt(target);
-    if (targetPiece && targetPiece.owner !== this.piece.owner) {
-  // Send captured piece to graveyard
-  gameState.moveToGraveyard(targetPiece);
+    const capturedPiece = targetCell.hasPiece() && targetCell.getPieceOwner() !== this.piece.owner ? targetCell.piece : null;
+    if (capturedPiece) {
+      // Send captured piece to graveyard
+      gameState.moveToGraveyard(capturedPiece);
     }
     
     // Store the original position for action recording
@@ -64,18 +63,18 @@ export class Move extends Action {
     gameState.setPiece(this.piece.coordinate, null);
     
     // Place piece at target position
-    gameState.setPiece(target, this.piece);
-    this.piece._setCoordinate(target);
+    gameState.setPiece(targetCell.coordinate, this.piece);
+    this.piece._setCoordinate(targetCell.coordinate);
     
     // Record the action
     gameState.addAction({
       type: 'move',
       pieceId: this.piece.id,
       from: fromCoordinate.toString(),
-      to: target.toString(),
-  captured: targetPiece ? targetPiece.id : null,
-  capturedType: targetPiece ? targetPiece.type : null,
-  capturedOwner: targetPiece ? targetPiece.owner : null
+      to: targetCell.coordinate.toString(),
+      captured: capturedPiece ? capturedPiece.id : null,
+      capturedType: capturedPiece ? capturedPiece.type : null,
+      capturedOwner: capturedPiece ? capturedPiece.owner : null
     });
   }
 
@@ -95,17 +94,5 @@ export class Move extends Action {
    */
   canCapture() {
     return true;
-  }
-
-  /**
-   * Get all valid move targets for this piece
-   * Base implementation - should be overridden by specific movement patterns
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {import('../engine/Coordinate.js').Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    // Base implementation returns empty array
-    // Subclasses should override with their specific movement patterns
-    return [];
   }
 }

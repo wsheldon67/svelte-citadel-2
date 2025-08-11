@@ -78,18 +78,15 @@ export class Land extends Piece {
 export class LandPlace extends Place {
   /**
    * Check if the Land placement is valid
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target coordinate
+   * @param {import('../engine/Cell.js').Cell} targetCell - The target cell
    * @param {import('../engine/GameState.js').GameState} currentGame - The current game state
    * @param {import('../engine/GameState.js').GameState} newGame - The new game state after placement
    * @throws {RuleViolation} If the placement is invalid
    */
-  check(target, currentGame, newGame) {
+  check(targetCell, currentGame, newGame) {
 
     // Call base class validation
-    super.check(target, currentGame, newGame);
-
-    // Check Land-specific adjacency requirements using Cell utilities
-    const targetCell = currentGame.getCell(target);
+    super.check(targetCell, currentGame, newGame);
     
     // Land cannot be placed where terrain already exists
     if (targetCell.hasTerrain()) {

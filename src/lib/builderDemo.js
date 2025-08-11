@@ -1,5 +1,6 @@
 import { Builder, BuilderMove, BuilderPlaceTerrain, BuilderRemoveTerrain, BuilderMoveTerrain } from './game/pieces/Builder.js';
 import { GameState } from './game/engine/GameState.js';
+import { GameEngine } from './game/engine/GameEngine.js';
 import { Coordinate } from './game/engine/Coordinate.js';
 import { Piece } from './game/pieces/Piece.js';
 
@@ -13,6 +14,9 @@ export function testBuilder() {
   const gameState = new GameState();
   gameState.addPlayer('player1');
   gameState.addPlayer('player2');
+  
+  // Create game engine
+  const engine = new GameEngine(gameState);
   
   // Create pieces
   const builder = new Builder({ owner: 'player1' });
