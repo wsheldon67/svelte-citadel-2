@@ -25,18 +25,6 @@ export class Builder extends Piece {
   getActions() {
     return [BuilderMove, BuilderMoveTerrain, BuilderRemoveTerrain, BuilderPlaceTerrain];
   }
-
-  /**
-   * Create a builder from JSON data
-   * @param {import('./Piece.js').PieceJSON} data
-   * @returns {Builder}
-   */
-  static fromJSON(data) {
-    return new Builder({
-      owner: data.owner,
-      id: data.id
-    });
-  }
 }
 
 /**

@@ -192,12 +192,14 @@ export class Piece {
 
   /**
    * Create a piece from JSON data
+   * Default implementation that works for most pieces.
+   * Subclasses can override if they need special deserialization logic.
    * @param {PieceJSON} data
    * @returns {Piece}
    */
   static fromJSON(data) {
-    return new Piece({
-      type: data.type,
+    // @ts-ignore - Subclasses handle the type parameter in their constructors
+    return new this({
       owner: data.owner,
       id: data.id
     });

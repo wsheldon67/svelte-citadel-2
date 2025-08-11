@@ -6,11 +6,4 @@ export class Citadel extends Piece {
   constructor(options) {
     super({ ...options, type: 'Citadel' });
   }
-
-  /**
-   * @param {import('./Piece.js').PieceJSON} data
-   */
-  static fromJSON(data) {
-    return new Citadel({ owner: data.owner, id: data.id });
-  }
 }

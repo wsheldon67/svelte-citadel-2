@@ -23,18 +23,6 @@ export class Bird extends Piece {
   getActions() {
     return [BirdMove];
   }
-
-  /**
-   * Create a bird from JSON data
-   * @param {import('./Piece.js').PieceJSON} data
-   * @returns {Bird}
-   */
-  static fromJSON(data) {
-    return new Bird({
-      owner: data.owner,
-      id: data.id
-    });
-  }
 }
 
 /**

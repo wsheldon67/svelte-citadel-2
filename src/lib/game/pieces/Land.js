@@ -30,18 +30,6 @@ export class Land extends Piece {
   }
 
   /**
-   * Create a Land piece from JSON data
-   * @param {import('./Piece.js').PieceJSON} data
-   * @returns {Land}
-   */
-  static fromJSON(data) {
-    return new Land({
-      owner: data.owner,
-      id: data.id
-    });
-  }
-
-  /**
    * Check if this Land piece can be placed at the given coordinate
    * @param {import('../engine/Coordinate.js').Coordinate} coordinate - The target coordinate
    * @param {import('../engine/GameState.js').GameState} gameState - The current game state

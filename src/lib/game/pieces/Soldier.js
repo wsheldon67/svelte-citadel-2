@@ -23,18 +23,6 @@ export class Soldier extends Piece {
   getActions() {
     return [SoldierMove];
   }
-
-  /**
-   * Create a soldier from JSON data
-   * @param {import('./Piece.js').PieceJSON} data
-   * @returns {Soldier}
-   */
-  static fromJSON(data) {
-    return new Soldier({
-      owner: data.owner,
-      id: data.id
-    });
-  }
 }
 
 /**
