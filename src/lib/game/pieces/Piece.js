@@ -214,4 +214,9 @@ export class Piece {
       id: data.id
     });
   }
+
+  isTerrain() {
+    // Default implementation - can be overridden by terrain pieces
+    return false;
+  }
 }

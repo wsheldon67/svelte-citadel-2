@@ -14,6 +14,7 @@ export { Bird } from './pieces/Bird.js';
 export { Soldier } from './pieces/Soldier.js';
 export { Builder } from './pieces/Builder.js';
 export { Citadel } from './pieces/Citadel.js';
+export { Land } from './pieces/Land.js';
 
 // Testing
 export { runBasicTest } from './engine/BasicTest.js';
