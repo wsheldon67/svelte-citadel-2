@@ -1,10 +1,5 @@
 import { Coordinate } from './Coordinate.js';
-
-/**
- * @typedef {Object} Cell
- * @property {import('../pieces/Piece.js').Piece|null} terrain - The terrain piece (Land, Turtle, etc.)
- * @property {import('../pieces/Piece.js').Piece|null} piece - The piece on this cell
- */
+import { Cell } from './Cell.js';
 
 /**
  * @typedef {Object} GameStateOptions
@@ -81,7 +76,7 @@ export class GameState {
     
     // Core game state
     /** @type {Map<string, Cell>} */
-    this.board = new Map(); // coordinate.key -> { terrain: piece|null, piece: piece|null }
+    this.board = new Map(); // coordinate.key -> Cell instance
     
     /** @type {string[]} */
     this.players = [];
@@ -184,10 +179,13 @@ export class GameState {
     // Deep copy board
     newState.board = new Map();
     for (const [key, cell] of this.board) {
-      newState.board.set(key, {
-        terrain: cell.terrain ? cell.terrain.copy() : null,
-        piece: cell.piece ? cell.piece.copy() : null
-      });
+      const coord = Coordinate.fromKey(key);
+      newState.board.set(key, new Cell(
+        coord,
+        cell.terrain ? cell.terrain.copy() : null,
+        cell.piece ? cell.piece.copy() : null,
+        newState
+      ));
     }
     
     // Copy arrays and maps
@@ -223,10 +221,17 @@ export class GameState {
   /**
    * Get the cell at a coordinate
    * @param {Coordinate} coordinate
-   * @returns {Cell} { terrain: piece|null, piece: piece|null }
+   * @returns {Cell}
    */
   getCell(coordinate) {
-    return this.board.get(coordinate.key) || { terrain: null, piece: null };
+    const existing = this.board.get(coordinate.key);
+    if (existing) {
+      return existing;
+    }
+    // Create a new empty cell if it doesn't exist
+    const newCell = Cell.empty(coordinate, this);
+    this.board.set(coordinate.key, newCell);
+    return newCell;
   }
 
   /**
@@ -236,8 +241,7 @@ export class GameState {
    */
   setTerrain(coordinate, terrainPiece) {
     const cell = this.getCell(coordinate);
-    cell.terrain = terrainPiece;
-    this.board.set(coordinate.key, cell);
+    cell.setTerrain(terrainPiece);
     this._updateLastModified();
   }
 
@@ -248,18 +252,7 @@ export class GameState {
    */
   setPiece(coordinate, piece) {
     const cell = this.getCell(coordinate);
-    const prev = cell.piece;
-    cell.piece = piece;
-    this.board.set(coordinate.key, cell);
-    // keep piece objects in sync
-    if (prev && prev._setCoordinate) {
-      prev._setCoordinate(null);
-      // keep gameState reference; could set null but leaving may aid history/replay
-    }
-    if (piece && piece._setCoordinate && piece._setGameState) {
-      piece._setCoordinate(coordinate);
-      piece._setGameState(this);
-    }
+    cell.setPiece(piece);
     this._updateLastModified();
   }
 
@@ -461,8 +454,7 @@ export class GameState {
     const cell = this.getCell(coordinate);
     const terrain = cell.terrain;
     if (terrain) {
-      cell.terrain = null;
-      this.board.set(coordinate.key, cell);
+      cell.setTerrain(null);
       this._updateLastModified();
     }
     return terrain;
@@ -484,13 +476,7 @@ export class GameState {
    */
   removeCellContents(coordinate) {
     const cell = this.getCell(coordinate);
-    const terrain = cell.terrain;
-    const piece = cell.piece;
-
-    // Clear the cell
-    cell.terrain = null;
-    cell.piece = null;
-    this.board.set(coordinate.key, cell);
+    const { terrain, piece } = cell.clear();
 
     // Move terrain to community pool if it exists
     if (terrain) {
@@ -585,11 +571,7 @@ export class GameState {
     const boardArray = [];
     for (const [key, cell] of this.board) {
       if (cell.terrain || cell.piece) {
-        boardArray.push({
-          coordinate: key,
-          terrain: cell.terrain ? cell.terrain.toJSON() : null,
-          piece: cell.piece ? cell.piece.toJSON() : null
-        });
+        boardArray.push(cell.toJSON());
       }
     }
 
@@ -630,11 +612,12 @@ export class GameState {
     
     // Restore board
     state.board = new Map();
-    for (const cell of data.board) {
-      state.board.set(cell.coordinate, {
-        terrain: cell.terrain ? pieceFromJSON(cell.terrain) : null,
-        piece: cell.piece ? pieceFromJSON(cell.piece) : null
-      });
+    for (const cellData of data.board) {
+      const coord = Coordinate.fromKey(cellData.coordinate);
+      const terrain = cellData.terrain ? pieceFromJSON(cellData.terrain) : null;
+      const piece = cellData.piece ? pieceFromJSON(cellData.piece) : null;
+      const cell = new Cell(coord, terrain, piece, state);
+      state.board.set(cellData.coordinate, cell);
     }
     
     // Restore other properties

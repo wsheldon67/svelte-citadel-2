@@ -135,16 +135,16 @@ export class BuilderMoveTerrain extends Action {
     
     // If there was a piece on the source terrain, move it to graveyard
     const sourceCell = gameState.getCell(this.sourceCoordinate);
-    if (sourceCell.piece) {
+    if (sourceCell.hasPiece() && sourceCell.piece) {
       gameState.moveToGraveyard(sourceCell.piece);
-      gameState.setPiece(this.sourceCoordinate, null);
+      sourceCell.setPiece(null);
     }
 
-    // If target has a piece, capture it
-    const targetPiece = gameState.getPieceAt(target);
-    if (targetPiece) {
-      gameState.moveToGraveyard(targetPiece);
-      gameState.setPiece(target, null);
+    // If target has a piece, capture it using Cell utilities
+    const targetCell = gameState.getCell(target);
+    if (targetCell.hasPiece() && targetCell.piece) {
+      gameState.moveToGraveyard(targetCell.piece);
+      targetCell.setPiece(null);
     }
 
     // Place the terrain at the target
@@ -180,8 +180,8 @@ export class BuilderRemoveTerrain extends Action {
     }
 
     // Target must have terrain (land tile)
-    const terrain = currentGame.getTerrainAt(target);
-    if (!terrain || terrain.type !== 'Land') {
+    const targetCell = currentGame.getCell(target);
+    if (!targetCell.hasTerrainOfType('Land')) {
       throw new RuleViolation('Target coordinate must have a land tile to remove');
     }
   }
@@ -234,7 +234,8 @@ export class BuilderPlaceTerrain extends Action {
     }
 
     // Target must be water (no terrain)
-    if (currentGame.hasTerrain(target)) {
+    const targetCell = currentGame.getCell(target);
+    if (targetCell.hasTerrain()) {
       throw new RuleViolation('Cannot place terrain on existing terrain');
     }
 
@@ -257,11 +258,11 @@ export class BuilderPlaceTerrain extends Action {
       throw new RuleViolation('No land tiles available in community pool');
     }
 
-    // If target has a piece on water, capture it
-    const targetPiece = gameState.getPieceAt(target);
-    if (targetPiece) {
-      gameState.moveToGraveyard(targetPiece);
-      gameState.setPiece(target, null);
+    // If target has a piece on water, capture it using Cell utilities
+    const targetCell = gameState.getCell(target);
+    if (targetCell.hasPiece() && targetCell.piece) {
+      gameState.moveToGraveyard(targetCell.piece);
+      targetCell.setPiece(null);
     }
 
     // Place the land tile

@@ -35,6 +35,7 @@
 - [x] Implement flexible player management system (2+ players, teams)
 - [x] Create `Graveyard` and dynamic piece pools (Personal/Community/Variant-specific)
 - [x] Design piece property system for complex interactions
+- [x] **COMPLETED**: Converted Cell from typedef to class with utility methods for improved piece authoring API (hasTerrain, hasPiece, hasPlayerPiece, isAdjacentToTerrain, etc.)
 
 ---
 

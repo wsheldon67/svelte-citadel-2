@@ -49,7 +49,8 @@ export class Land extends Piece {
    */
   canBePlacedAt(coordinate, gameState) {
     // Land can only be placed in water (where there's no existing terrain)
-    return !gameState.hasTerrain(coordinate);
+    const targetCell = gameState.getCell(coordinate);
+    return !targetCell.hasTerrain();
   }
 
   /**
@@ -87,12 +88,18 @@ export class LandPlace extends Place {
     // Call base class validation
     super.check(target, currentGame, newGame);
 
-    // Check Land-specific adjacency requirements
-    // Check if there's any terrain on the board
+    // Check Land-specific adjacency requirements using Cell utilities
+    const targetCell = currentGame.getCell(target);
+    
+    // Land cannot be placed where terrain already exists
+    if (targetCell.hasTerrain()) {
+      throw new RuleViolation('Cannot place Land where terrain already exists');
+    }
 
+    // Check if there's any terrain on the board
     if (currentGame.hasAnyTerrain()) {
-      // Must be adjacent to existing terrain
-      if (!currentGame.isAdjacentToAnyTerrain(target)) {
+      // Must be adjacent to existing terrain - use Cell's adjacency check
+      if (!targetCell.isAdjacentToTerrain()) {
         throw new RuleViolation('Land must be placed adjacent to existing terrain');
       }
     }
