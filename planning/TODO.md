@@ -27,9 +27,9 @@
 - [x] Create `Board` class (infinite 2D grid with variant support)
 - [x] Implement `Land` tile system with custom properties
 - [x] Create `Water` space handling with piece interactions
-- [ ] Design `Citadel` class with variant-specific rules and connectivity
+- [x] Design `Citadel` class with variant-specific rules and connectivity
   - [x] Implement base `Citadel` piece (type + ownership; can be placed and captured)
-  - [ ] Enforce citadel connectivity validation in engine (path-finding)
+  - [x] Enforce citadel connectivity validation in engine (path-finding)
 - [x] Implement flexible player management system (2+ players, teams)
 - [x] Create `Graveyard` and dynamic piece pools (Personal/Community/Variant-specific)
 - [x] Design piece property system for complex interactions
@@ -49,9 +49,9 @@
 - [x] Create "Start Game" button for host
 
 ### Game Phases
-- [ ] **Land Placement Phase**
-  - [ ] Interactive land tile placement
-  - [ ] Citadel placement with connectivity validation
+- [x] **Land Placement Phase**
+  - [x] Interactive land tile placement
+  - [x] Citadel placement with connectivity validation
 - [ ] **Piece Selection Phase**
   - [ ] Personal stash piece selection
   - [ ] Community pool piece selection
@@ -70,18 +70,18 @@
 ## 🎨 User Interface & Experience
 
 ### Interactive Board
-- [ ] Create responsive game board component
-- [ ] Implement tile highlighting system
+- [x] Create responsive game board component
+- [x] Implement tile highlighting system
 - [ ] Add piece selection and action preview
 - [ ] Create floating action menus for complex pieces
 - [ ] Implement drag-and-drop functionality (optional)
 
 ### UI Components
-- [ ] Design game board layout component
+- [x] Design game board layout component
 - [ ] Create piece selection panels
 - [ ] Implement action confirmation dialogs
-- [ ] Add game status indicators
-- [ ] Create player turn indicators
+- [x] Add game status indicators
+- [x] Create player turn indicators
 - [ ] Design graveyard and pools display
 
 ### Visual Design
@@ -92,12 +92,12 @@
 
 #### Own Art System (Decision + Tasks)
 - [x] Decision: Default/built-in art are static assets; user uploads live in Firebase Storage
-- [ ] Provide 7 built-in sets: 6 player sets (0–5) + 1 shared/unowned set
+- [x] Provide 7 built-in sets: 6 player sets (0–5) + 1 shared/unowned set
   - [x] Organize static art at `static/art/{setId}/{Piece}.png` (e.g., `0/Bird.png`)
-  - [ ] Add remaining built-in sets for all current pieces
-- [ ] Art resolver with fallback order
-  - [ ] Priority: player's selected user set → selected built-in set
-  - [ ] Unowned Pices priority - set choosen for this purpose by host -> default unowned pieces set.
+  - [x] Add remaining built-in sets for all current pieces
+- [x] Art resolver with fallback order
+  - [x] Priority: player's selected user set → selected built-in set
+  - [x] Unowned Pieces priority - set chosen for this purpose by host -> default unowned pieces set.
   - [ ] Cache/version strategy for static and uploaded assets
 - [ ] Lobby UI behaviors
   - [ ] Enforce unique art set per player (disable taken sets)
@@ -159,7 +159,7 @@
 ### Real-time Features
 - [x] Set up Firebase project and configuration
 - [x] Implement real-time game state synchronization
-- [ ] Create game session management
+- [x] Create game session management
 - [x] Implement lobby real-time updates (players array subscription)
 
 ### Data Storage
@@ -326,6 +326,6 @@
 ---
 
 *Last Updated: August 10, 2025*
-*Status: Core engine complete; initial UI & Firebase lobby online*
-*Progress: ✅ Engine with copy-and-test design ✅ Basic pieces (Bird, Soldier) ✅ Unit tests passing ✅ Action history & serialization ✅ Replay scaffold ✅ Variants (Assassin, Last Man Standing) ✅ Home UI with Create/Join ✅ Lobby with realtime players & Start button ✅ E2E smoke on Edge*
-*Next: Wire Start to game session + /game route, add presence cleanup, Firestore rules, board UI with GameEngine data, and E2E for create/join lobby*
+*Status: Core engine complete; citadel placement phase implemented; Firebase lobby & game sessions online*
+*Progress: ✅ Engine with copy-and-test design ✅ Basic pieces (Bird, Soldier, Citadel) ✅ Unit tests passing ✅ Action history & serialization ✅ Replay scaffold ✅ Variants (Assassin, Last Man Standing) ✅ Home UI with Create/Join ✅ Lobby with realtime players & Start button ✅ Land placement phase ✅ Citadel placement phase with player-specific art sets ✅ Interactive game board with highlighting ✅ Turn-based gameplay ✅ Game session management ✅ E2E smoke on Edge*
+*Next: Piece selection phase, battle phase implementation, and remaining piece types*

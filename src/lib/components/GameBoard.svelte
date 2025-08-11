@@ -21,11 +21,22 @@
 
   /**
    * Resolve sprite URL for a terrain or piece type.
-   * For now, use built-in set 0 for everything.
+   * Art set 0 for unowned/neutral pieces, set 1 for player 1, set 2 for player 2, etc.
    * @param {string} type
+   * @param {string|null} [owner] - piece owner, if any
    */
-  function sprite(type) {
-    return `/art/0/${type}.png`;
+  function sprite(type, owner = null) {
+    let artSet = 0; // default for terrain and unowned pieces
+    
+    if (owner && owner !== 'neutral') {
+      // Map player IDs to art sets
+      const playerIndex = gameState?.players?.indexOf(owner);
+      if (playerIndex !== -1 && playerIndex < 2) {
+        artSet = playerIndex + 1; // player 0 gets set 1, player 1 gets set 2
+      }
+    }
+    
+    return `/art/${artSet}/${type}.png`;
   }
 
   /** @param {Coordinate} c */
@@ -46,10 +57,10 @@
         onclick={() => clickCell(c)}
       >
         {#if terrain}
-          <img class="terrain" src={sprite(terrain.type)} alt={terrain.type} />
+          <img class="terrain" src={sprite(terrain.type, terrain.owner)} alt={terrain.type} />
         {/if}
         {#if piece}
-          <img class="piece" src={sprite(piece.type)} alt={piece.type} />
+          <img class="piece" src={sprite(piece.type, piece.owner)} alt={piece.type} />
         {/if}
         <span class="coord">{x},{y}</span>
       </button>

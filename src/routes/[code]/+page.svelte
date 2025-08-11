@@ -9,6 +9,7 @@
   import { doc, getDoc, setDoc, updateDoc, onSnapshot, runTransaction, serverTimestamp } from 'firebase/firestore';
   import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
   import { GameEngine, GameState, Coordinate, Piece } from '$lib/game';
+  import { Citadel } from '$lib/game/pieces/Citadel.js';
 
   // Load data from +page.js
   let { data } = $props();
@@ -55,6 +56,10 @@
   // Player name mapping (since we're storing minimal data now)
   let playerNames = $state(new Map());
 
+  /**
+   * @param {string} playerId
+   * @returns {string}
+   */
   function getPlayerName(playerId) {
     return playerNames.get(playerId) || `Player ${playerId.slice(-4)}`;
   }
@@ -193,7 +198,9 @@
 
       // Check if land phase is complete
       if (!gameState.setup) throw new Error('No setup data');
-      const total = gameState.setup.landsPerPlayer * state.players.length;
+      /** @type {{landsPerPlayer: number, playerCount: number, personalPiecesPerPlayer: number, communityPiecesPerPlayer: number}} */
+      const setup = /** @type {any} */ (gameState.setup);
+      const total = setup.landsPerPlayer * state.players.length;
       let landCount = 0;
       for (const [, cell] of state.board) {
         if (cell?.terrain?.type === 'Land') landCount++;
@@ -214,8 +221,30 @@
 
   /** @param {Coordinate} coordinate */
   async function placeCitadel(coordinate) {
-    // TODO: Implement citadel placement with proper validation
-    console.log('Place citadel at', coordinate);
+    const gameRef = doc(db, 'games', code);
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(gameRef);
+      const data = snap.data();
+      if (!data) throw new Error('Game not found');
+      
+      const state = GameState.fromJSON(data.state, pieceFromJSON);
+      if (state.currentPlayer !== myId) throw new Error('Not your turn');
+      if (!state.hasTerrain(coordinate)) throw new Error('Must be on land');
+      if (state.hasPiece(coordinate)) throw new Error('Cell occupied');
+
+      const citadel = new Citadel({ owner: myId });
+      state.setPiece(coordinate, citadel);
+      state.addAction({ type: 'place-citadel', at: coordinate.toString(), player: myId });
+
+      // TODO: Check if citadel phase is complete (when all players have placed their citadels)
+      // For now, just advance turn
+      state.nextTurn();
+
+      tx.update(gameRef, {
+        state: state.toJSON(),
+        updatedAt: serverTimestamp()
+      });
+    });
   }
 
   onMount(() => {
