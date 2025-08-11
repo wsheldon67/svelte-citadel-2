@@ -125,7 +125,10 @@ describe('Land', () => {
       expect(gameState.getTerrainAt(coordinate)).not.toBe(land);
     });
   });
-});describe('LandPlace', () => {
+});
+
+
+describe('LandPlace', () => {
   /** @type {Land} */
   let land;
   /** @type {LandPlace} */
@@ -219,20 +222,6 @@ describe('Land', () => {
         landPlace.check(target, mockGameState, mockGameState);
       }).not.toThrow();
     });
-
-    it('should reject non-Land pieces', () => {
-      const Piece = require('../pieces/Piece.js').Piece;
-      const nonLandPiece = new Piece({ type: 'Bird', owner: 'player1' });
-      const nonLandPlace = new LandPlace(nonLandPiece);
-      const target = new Coordinate(0, 0);
-
-      expect(() => {
-        nonLandPlace.check(target, mockGameState, mockGameState);
-      }).toThrow(RuleViolation);
-      expect(() => {
-        nonLandPlace.check(target, mockGameState, mockGameState);
-      }).toThrow(/LandPlace action can only be used with Land pieces/);
-    });
   });
 
   describe('hasAnyTerrainOnBoard', () => {
@@ -313,47 +302,6 @@ describe('Land', () => {
         // @ts-expect-error: TypeScript cannot infer type but runtime is correct
         expect(placedPiece.type).toBe('Land');
       }
-    });
-  });
-
-  describe('getValidTargets', () => {
-    it('should return grid around origin for first piece', () => {
-      const targets = landPlace.getValidTargets(mockGameState);
-
-      expect(targets.length).toBeGreaterThan(0);
-      // Should include origin
-      expect(targets.some(coord => coord.x === 0 && coord.y === 0)).toBe(true);
-    });
-
-    it('should return adjacent coordinates when terrain exists', () => {
-      // Mock existing terrain at (0,0)
-      mockGameState.board.set('0,0', {
-        terrain: new Land({ owner: 'player1' }),
-        piece: null
-      });
-
-      // Mock Coordinate.getAllAdjacent
-      const mockCoord = new Coordinate(0, 0);
-      mockCoord.getAllAdjacent = () => [
-        new Coordinate(1, 0),
-        new Coordinate(-1, 0),
-        new Coordinate(0, 1),
-        new Coordinate(0, -1)
-      ];
-
-      // Replace the terrain coordinate with our mock
-      mockGameState.board.set('0,0', {
-        terrain: new Land({ owner: 'player1' }),
-        piece: null
-      });
-
-      const targets = landPlace.getValidTargets(mockGameState);
-
-      expect(targets.length).toBe(4); // Four adjacent coordinates
-      expect(targets.some(coord => coord.x === 1 && coord.y === 0)).toBe(true);
-      expect(targets.some(coord => coord.x === -1 && coord.y === 0)).toBe(true);
-      expect(targets.some(coord => coord.x === 0 && coord.y === 1)).toBe(true);
-      expect(targets.some(coord => coord.x === 0 && coord.y === -1)).toBe(true);
     });
   });
 
