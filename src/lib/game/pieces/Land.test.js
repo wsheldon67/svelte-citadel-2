@@ -52,10 +52,16 @@ describe('Land', () => {
     });
   });
 
-  describe('canBePlacedAt', () => {
+  describe('placement validation using LandPlace action', () => {
     it('should allow placement in water (empty space)', () => {
       const coordinate = new Coordinate(0, 0);
-      expect(land.canBePlacedAt(coordinate, gameState)).toBe(true);
+      const landPlace = new LandPlace(land);
+      const targetCell = gameState.getCell(coordinate);
+      
+      // Should not throw for valid placement
+      expect(() => {
+        landPlace.check(targetCell, gameState, gameState);
+      }).not.toThrow();
     });
 
     it('should not allow placement where terrain already exists', () => {
@@ -63,16 +69,25 @@ describe('Land', () => {
       const existingLand = new Land({ owner: 'neutral' });
       gameState.setTerrain(coordinate, existingLand);
       
-      expect(land.canBePlacedAt(coordinate, gameState)).toBe(false);
+      const landPlace = new LandPlace(land);
+      const targetCell = gameState.getCell(coordinate);
+      
+      expect(() => {
+        landPlace.check(targetCell, gameState, gameState);
+      }).toThrow(RuleViolation);
     });
 
-    it('should allow placement even if a piece is present (pieces go on top of terrain)', () => {
+    it('should not allow placement where piece already exists', () => {
       const coordinate = new Coordinate(0, 0);
       const piece = new Piece({ type: 'TestPiece', owner: 'player1' });
       gameState.setPiece(coordinate, piece);
       
-      // Land can still be placed because it goes under pieces, not on top
-      expect(land.canBePlacedAt(coordinate, gameState)).toBe(true);
+      const landPlace = new LandPlace(land);
+      const targetCell = gameState.getCell(coordinate);
+      
+      expect(() => {
+        landPlace.check(targetCell, gameState, gameState);
+      }).toThrow(RuleViolation);
     });
   });
 

@@ -30,18 +30,6 @@ export class Land extends Piece {
   }
 
   /**
-   * Check if this Land piece can be placed at the given coordinate
-   * @param {import('../engine/Coordinate.js').Coordinate} coordinate - The target coordinate
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {boolean} True if the Land can be placed here
-   */
-  canBePlacedAt(coordinate, gameState) {
-    // Land can only be placed in water (where there's no existing terrain)
-    const targetCell = gameState.getCell(coordinate);
-    return !targetCell.hasTerrain();
-  }
-
-  /**
    * Check if this is a terrain piece
    * @returns {boolean} Always true for Land
    */
