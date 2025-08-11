@@ -53,6 +53,15 @@ export class Place extends Action {
     } else {
       gameState.setPiece(targetCell.coordinate, placedPiece);
     }
+
+    // Record the action
+    gameState.addAction({
+      type: 'place',
+      pieceId: this.piece.id,
+      data: {
+        at: targetCell.coordinate.toString()
+      }
+    });
   }
 
   /**

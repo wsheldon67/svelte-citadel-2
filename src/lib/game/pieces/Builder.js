@@ -136,6 +136,16 @@ export class BuilderMoveTerrain extends Action {
 
     // Place the terrain at the target
     gameState.setTerrain(targetCell.coordinate, terrain);
+
+    // Record the action
+    gameState.addAction({
+      type: 'move_terrain',
+      pieceId: this.piece.id,
+      data: {
+        from: this.sourceCoordinate.toString(),
+        to: targetCell.coordinate.toString()
+      }
+    });
   }
 
   /**
@@ -189,6 +199,15 @@ export class BuilderRemoveTerrain extends Action {
       gameState.moveToGraveyard(this.piece);
       // Note: The piece's coordinate should be updated by the game engine
     }
+
+    // Record the action
+    gameState.addAction({
+      type: 'remove_terrain',
+      pieceId: this.piece.id,
+      data: {
+        at: targetCell.coordinate.toString()
+      }
+    });
   }
 
   /**
@@ -251,6 +270,15 @@ export class BuilderPlaceTerrain extends Action {
 
     // Place the land tile
     gameState.setTerrain(targetCell.coordinate, landTile);
+
+    // Record the action
+    gameState.addAction({
+      type: 'place_terrain',
+      pieceId: this.piece.id,
+      data: {
+        at: targetCell.coordinate.toString()
+      }
+    });
   }
 
   /**

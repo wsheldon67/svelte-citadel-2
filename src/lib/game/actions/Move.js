@@ -70,11 +70,13 @@ export class Move extends Action {
     gameState.addAction({
       type: 'move',
       pieceId: this.piece.id,
-      from: fromCoordinate.toString(),
-      to: targetCell.coordinate.toString(),
-      captured: capturedPiece ? capturedPiece.id : null,
-      capturedType: capturedPiece ? capturedPiece.type : null,
-      capturedOwner: capturedPiece ? capturedPiece.owner : null
+      data: {
+        from: fromCoordinate.toString(),
+        to: targetCell.coordinate.toString(),
+        captured: capturedPiece ? capturedPiece.id : null,
+        capturedType: capturedPiece ? capturedPiece.type : null,
+        capturedOwner: capturedPiece ? capturedPiece.owner : null
+      }
     });
   }
 
