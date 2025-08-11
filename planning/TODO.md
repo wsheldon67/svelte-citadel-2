@@ -23,6 +23,7 @@
 - [x] Create pluggable action classes (`Move`, `Capture`, `Place`, custom actions)
 - [x] Add comprehensive rule validation system (`RuleViolation` exceptions)
 - [x] Design game variant system from the ground up (Variant base, hooks, class-based availability)
+- [x] **REFACTORED**: Moved `hasAnyTerrain()` and `isAdjacentToAnyTerrain()` methods from `LandPlace` class to `GameState` class for better reusability across pieces and actions
 
 ### Data Models (Extensible Architecture)
 - [x] Create `Board` class (infinite 2D grid with variant support)

@@ -337,6 +337,29 @@ export class GameState {
   }
 
   /**
+   * Check if there's any terrain on the board
+   * @returns {boolean}
+   */
+  hasAnyTerrain() {
+    for (const [key, cell] of this.board) {
+      if (cell.terrain) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check if target coordinate is adjacent to any existing terrain
+   * @param {Coordinate} target - The target coordinate
+   * @returns {boolean}
+   */
+  isAdjacentToAnyTerrain(target) {
+    const adjacentCoords = target.getAllAdjacent();
+    return adjacentCoords.some(coord => this.hasTerrain(coord));
+  }
+
+  /**
    * Find pieces of a specific type
    * @param {string} pieceType
    * @param {string|null} [playerId] - Optional filter by player

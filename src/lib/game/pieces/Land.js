@@ -89,40 +89,14 @@ export class LandPlace extends Place {
 
     // Check Land-specific adjacency requirements
     // Check if there's any terrain on the board
-    const hasAnyTerrain = this.hasAnyTerrainOnBoard(currentGame);
 
-    if (hasAnyTerrain) {
+    if (currentGame.hasAnyTerrain()) {
       // Must be adjacent to existing terrain
-      if (!this.isAdjacentToAnyTerrain(target, currentGame)) {
+      if (!currentGame.isAdjacentToAnyTerrain(target)) {
         throw new RuleViolation('Land must be placed adjacent to existing terrain');
       }
     }
     // If no terrain exists yet, first piece can be placed anywhere
-  }
-
-  /**
-   * Check if there's any terrain on the board
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {boolean}
-   */
-  hasAnyTerrainOnBoard(gameState) {
-    for (const [key, cell] of gameState.board) {
-      if (cell.terrain) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Check if target coordinate is adjacent to any existing terrain
-   * @param {import('../engine/Coordinate.js').Coordinate} target - The target coordinate
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {boolean}
-   */
-  isAdjacentToAnyTerrain(target, gameState) {
-    const adjacentCoords = target.getAllAdjacent();
-    return adjacentCoords.some(coord => gameState.hasTerrain(coord));
   }
 
   /**

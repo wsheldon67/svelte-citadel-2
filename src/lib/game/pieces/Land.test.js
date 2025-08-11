@@ -216,7 +216,7 @@ describe('LandPlace', () => {
       });
 
       // Mock the adjacency check
-      landPlace.isAdjacentToAnyTerrain = () => true;
+      mockGameState.isAdjacentToAnyTerrain = () => true;
 
       expect(() => {
         landPlace.check(target, mockGameState, mockGameState);
@@ -226,7 +226,7 @@ describe('LandPlace', () => {
 
   describe('hasAnyTerrainOnBoard', () => {
     it('should return false when no terrain exists', () => {
-      expect(landPlace.hasAnyTerrainOnBoard(mockGameState)).toBe(false);
+      expect(mockGameState.hasAnyTerrain()).toBe(false);
     });
 
     it('should return true when terrain exists', () => {
@@ -235,7 +235,7 @@ describe('LandPlace', () => {
         piece: null
       });
 
-      expect(landPlace.hasAnyTerrainOnBoard(mockGameState)).toBe(true);
+      expect(mockGameState.hasAnyTerrain()).toBe(true);
     });
   });
 
@@ -251,7 +251,7 @@ describe('LandPlace', () => {
         new Coordinate(5, 6)
       ];
 
-      expect(landPlace.isAdjacentToAnyTerrain(target, mockGameState)).toBe(false);
+      expect(mockGameState.isAdjacentToAnyTerrain(target)).toBe(false);
     });
 
     it('should return true when terrain is adjacent', () => {
@@ -268,7 +268,7 @@ describe('LandPlace', () => {
       // Mock terrain existing at (0,0)
       mockGameState.hasTerrain = (coord) => coord.x === 0 && coord.y === 0;
 
-      expect(landPlace.isAdjacentToAnyTerrain(target, mockGameState)).toBe(true);
+      expect(mockGameState.isAdjacentToAnyTerrain(target)).toBe(true);
     });
   });
 
