@@ -15,16 +15,13 @@ describe('LandPlace', () => {
   beforeEach(() => {
     land = new Land({ owner: 'player1' });
     landPlace = new LandPlace(land);
-    
-    // Mock game state with basic methods
-    mockGameState = {
-      board: new Map(),
-      hasTerrain: (coord) => false,
-      hasPiece: (coord) => false,
-      setTerrain: (coord, piece) => {},
-      setPiece: (coord, piece) => {},
-      copy: () => ({ ...mockGameState })
-    };
+    // Use a real GameState instance and override methods as needed
+    mockGameState = new (require('../engine/GameState.js').GameState)();
+    mockGameState.hasTerrain = (coord) => false;
+    mockGameState.hasPiece = (coord) => false;
+    mockGameState.setTerrain = (coord, piece) => {};
+    mockGameState.setPiece = (coord, piece) => {};
+    mockGameState.copy = () => mockGameState; // For test, shallow copy is fine
   });
 
   describe('constructor', () => {
@@ -71,7 +68,8 @@ describe('LandPlace', () => {
       
       // Mock existing terrain at (0,0)
       mockGameState.board.set('0,0', { 
-        terrain: { coordinate: new Coordinate(0, 0) }
+        terrain: new Land({ owner: 'player1' }),
+        piece: null
       });
       
       expect(() => {
@@ -87,7 +85,8 @@ describe('LandPlace', () => {
       
       // Mock existing terrain at (0,0)
       mockGameState.board.set('0,0', { 
-        terrain: { coordinate: new Coordinate(0, 0) }
+        terrain: new Land({ owner: 'player1' }),
+        piece: null
       });
       
       // Mock the adjacency check
@@ -99,8 +98,9 @@ describe('LandPlace', () => {
     });
 
     it('should reject non-Land pieces', () => {
-      const nonLandPiece = { type: 'Bird', owner: 'player1' };
-      const nonLandPlace = new LandPlace(nonLandPiece);
+  const Piece = require('../pieces/Piece.js').Piece;
+  const nonLandPiece = new Piece({ type: 'Bird', owner: 'player1' });
+  const nonLandPlace = new LandPlace(nonLandPiece);
       const target = new Coordinate(0, 0);
       
       expect(() => {
@@ -119,7 +119,8 @@ describe('LandPlace', () => {
 
     it('should return true when terrain exists', () => {
       mockGameState.board.set('0,0', { 
-        terrain: { coordinate: new Coordinate(0, 0) }
+        terrain: new Land({ owner: 'player1' }),
+        piece: null
       });
       
       expect(landPlace.hasAnyTerrainOnBoard(mockGameState)).toBe(true);
@@ -162,9 +163,9 @@ describe('LandPlace', () => {
   describe('perform', () => {
     it('should place the Land piece in terrain layer', () => {
       const target = new Coordinate(0, 0);
-      let placedPiece = null;
-      let placedCoord = null;
-      
+  /** @type {import('../pieces/Piece.js').Piece|null} */
+  let placedPiece = null;
+  let placedCoord = null;
       // Mock setTerrain to capture placement
       mockGameState.setTerrain = (coord, piece) => {
         placedCoord = coord;
@@ -177,12 +178,18 @@ describe('LandPlace', () => {
         copy._setCoordinate = (coord) => copy._coordinate = coord;
         return copy;
       };
+      // Explicitly type placedPiece as Land for TypeScript
+      /** @type {import('../pieces/Land.js').Land|null} */
+      placedPiece = null;
       
       landPlace.perform(target, mockGameState);
       
       expect(placedCoord).toBe(target);
       expect(placedPiece).toBeDefined();
-      expect(placedPiece.type).toBe('Land');
+      if (placedPiece) {
+        // @ts-expect-error: TypeScript cannot infer type but runtime is correct
+        expect(placedPiece.type).toBe('Land');
+      }
     });
   });
 
@@ -198,7 +205,8 @@ describe('LandPlace', () => {
     it('should return adjacent coordinates when terrain exists', () => {
       // Mock existing terrain at (0,0)
       mockGameState.board.set('0,0', { 
-        terrain: { coordinate: new Coordinate(0, 0) }
+        terrain: new Land({ owner: 'player1' }),
+        piece: null
       });
       
       // Mock Coordinate.getAllAdjacent
@@ -212,7 +220,8 @@ describe('LandPlace', () => {
       
       // Replace the terrain coordinate with our mock
       mockGameState.board.set('0,0', { 
-        terrain: { coordinate: mockCoord }
+        terrain: new Land({ owner: 'player1' }),
+        piece: null
       });
       
       const targets = landPlace.getValidTargets(mockGameState);
