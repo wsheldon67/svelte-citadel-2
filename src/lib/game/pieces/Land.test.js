@@ -97,12 +97,6 @@ describe('Land', () => {
     });
   });
 
-  describe('canSupportPieces', () => {
-    it('should return true (pieces can be placed on Land)', () => {
-      expect(land.canSupportPieces()).toBe(true);
-    });
-  });
-
   describe('integration with GameState', () => {
     it('should be placeable as terrain in GameState', () => {
       const coordinate = new Coordinate(1, 1);

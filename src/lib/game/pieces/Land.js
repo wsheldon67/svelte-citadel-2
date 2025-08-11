@@ -36,14 +36,6 @@ export class Land extends Piece {
   isTerrain() {
     return true;
   }
-
-  /**
-   * Check if pieces can be placed on this Land
-   * @returns {boolean} Always true - pieces can be placed on Land
-   */
-  canSupportPieces() {
-    return true;
-  }
 }
 
 /**
