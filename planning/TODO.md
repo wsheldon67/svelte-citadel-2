@@ -53,8 +53,16 @@
 
 ### Game Phases
 - [x] **Land Placement Phase**
-  - [x] Interactive land tile placement
-  - [x] Citadel placement with connectivity validation
+  - [ ] Interactive land tile placement
+  - [ ] Citadel placement with connectivity validation
+  - [x] **COMPLETED**: Updated LandPhase component to utilize proper Land.js class and LandPlace action validation, including adjacency rules for terrain placement
+  - [ ] Test game start thru land placement using playwright.
+  - [ ] Move `placeLand()` out of `+page.svelte`
+  - [ ] Move `placeCitadel()` out of `+page.svelte`
+  - [ ] Write playwright tests for lobby
+  - [ ] Write playwright tests for land placement
+  - [ ] Write playwright tests for citadel placement
+  - [ ] Render water
 - [ ] **Piece Selection Phase**
   - [ ] Personal stash piece selection
   - [ ] Community pool piece selection

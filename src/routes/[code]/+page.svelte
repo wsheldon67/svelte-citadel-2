@@ -10,6 +10,7 @@
   import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
   import { GameEngine, GameState, Coordinate, Piece } from '$lib/game';
   import { Citadel } from '$lib/game/pieces/Citadel.js';
+  import { Land, LandPlace } from '$lib/game/pieces/Land.js';
 
   // Load data from +page.js
   let { data } = $props();
@@ -71,8 +72,17 @@
   /** @param {any} data */
   function pieceFromJSON(data) {
     if (!data) return null;
-    // Import proper piece classes as needed
-    return Piece.fromJSON(data);
+    
+    // Handle specific piece types
+    switch (data.type) {
+      case 'Land':
+        return Land.fromJSON(data);
+      case 'Citadel':
+        return Citadel.fromJSON(data);
+      default:
+        // Fall back to base Piece for unknown types
+        return Piece.fromJSON(data);
+    }
   }
 
   async function initGame() {
@@ -158,10 +168,18 @@
       
       const state = GameState.fromJSON(data.state, pieceFromJSON);
       if (state.currentPlayer !== myId) throw new Error('Not your turn');
-      if (state.hasTerrain(coordinate)) throw new Error('Cell occupied');
 
-      const land = new Piece({ type: 'Land', owner: 'neutral' });
-      state.setTerrain(coordinate, land);
+      // Create Land piece and validate placement using proper Land rules
+      const land = new Land({ owner: 'neutral' });
+      const landPlace = new LandPlace(land);
+      const targetCell = state.getCell(coordinate);
+      
+      // Validate placement using Land placement rules
+      landPlace.check(targetCell, state, state);
+      
+      // Perform the placement using the action's perform method
+      landPlace.perform(targetCell, state);
+      
       state.addAction({ type: 'place-land', at: coordinate.toString(), player: myId });
 
       // Check if land phase is complete
