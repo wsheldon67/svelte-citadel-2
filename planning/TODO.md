@@ -47,8 +47,6 @@
 - [x] Implement lobby system with game codes (create/join via URL + code)
 - [x] Add player invitation and joining functionality (code and link)
 - [x] Create "Start Game" button for host
-  - [x] Wire Start to create a game session/doc and navigate to /game/[code]
-  - [ ] Presence: remove player from lobby on disconnect/leave
 
 ### Game Phases
 - [ ] **Land Placement Phase**
@@ -95,18 +93,18 @@
 #### Own Art System (Decision + Tasks)
 - [x] Decision: Default/built-in art are static assets; user uploads live in Firebase Storage
 - [ ] Provide 7 built-in sets: 6 player sets (0–5) + 1 shared/unowned set
-  - [ ] Organize static art at `static/art/{setId}/{Piece}.png` (e.g., `0/Bird.png`)
+  - [x] Organize static art at `static/art/{setId}/{Piece}.png` (e.g., `0/Bird.png`)
   - [ ] Add remaining built-in sets for all current pieces
 - [ ] Art resolver with fallback order
-  - [ ] Priority: player's selected user set → selected built-in set → shared/unowned set → placeholder
-  - [ ] Respect host-selected set for shared/unowned pieces
+  - [ ] Priority: player's selected user set → selected built-in set
+  - [ ] Unowned Pices priority - set choosen for this purpose by host -> default unowned pieces set.
   - [ ] Cache/version strategy for static and uploaded assets
 - [ ] Lobby UI behaviors
   - [ ] Enforce unique art set per player (disable taken sets)
   - [ ] Host selects the shared/unowned set
   - [ ] Live conflict resolution as players join/leave or change selection
 - [ ] Upload pipeline for custom sets
-  - [ ] Client validation (type/size), optional square crop/resize (256–512px)
+  - [ ] Client validation (type/size), optional square crop/resize (64–512px)
   - [ ] Convert/store as PNG/WebP under `users/{uid}/artSets/{setId}/{Piece}.png`
   - [ ] Generate thumbnail/preview
 - [ ] Metadata & persistence
@@ -160,13 +158,12 @@
 
 ### Real-time Features
 - [x] Set up Firebase project and configuration
-- [ ] Implement real-time game state synchronization
-- [ ] Add player connection/disconnection handling
+- [x] Implement real-time game state synchronization
 - [ ] Create game session management
 - [x] Implement lobby real-time updates (players array subscription)
 
 ### Data Storage
-- [ ] Design game state schema
+- [x] Design game state schema
 - [x] Implement action history storage
 - [x] Add game state serialization (JSON) for save/load functionality
 - [x] Create game recreation from serialized data with action replay
@@ -206,7 +203,6 @@
  - [ ] Test custom set upload flow (validation, storage, metadata)
 
 ### End-to-End Testing (Playwright)
-- [x] Playwright e2e runs locally (Microsoft Edge)
 - [ ] Complete game flow testing
 - [ ] Multi-player game scenarios
 - [ ] Error handling and edge cases
@@ -229,12 +225,6 @@
   - [ ] Traditional citadel-based win condition
   - [ ] Land connectivity requirements
   - [ ] Standard piece placement rules
-  
-- [ ] **Conquest Mode**
-  - [ ] Neutral territory tiles
-  - [ ] Territory control win conditions  
-  - [ ] Modified piece placement rules
-  - [ ] Area control mechanics
 
 ### Implemented Variants (Current)
 - [x] Assassin (variant): Win immediately on first Citadel capture; also wins if only one player has Citadels
@@ -251,7 +241,6 @@
 ### Core Extensibility Systems
 - [ ] Plugin system for custom pieces with validation
 - [ ] Custom game rule definition language/API
-- [ ] Mod support framework with sandboxing
 - [ ] Dynamic piece property system
 - [ ] Extensible action type system
 - [ ] Variant-specific UI component injection

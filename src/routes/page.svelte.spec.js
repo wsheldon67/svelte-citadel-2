@@ -20,7 +20,7 @@ describe('/+page.svelte', () => {
 		vi.clearAllMocks();
 	});
 
-	it('navigates to lobby on Create game with host params', async () => {
+	it('navigates to /[code] on Create game with host params', async () => {
 		render(Page);
 
 		const create = page.getByRole('button', { name: 'Create game' });
@@ -28,12 +28,12 @@ describe('/+page.svelte', () => {
 
 		expect(goto).toHaveBeenCalledTimes(1);
 		const url = /** @type {any} */ (goto).mock.calls[0][0];
-		expect(url).toMatch(/^\/lobby\/[A-Z0-9]{6}\?/);
+		expect(url).toMatch(/^\/[A-Z0-9]{6}\?/);
 		expect(url).toContain('host=1');
 		expect(url).toContain('pc=');
 	});
 
-	it('navigates to lobby on Join game using code', async () => {
+	it('navigates to /[code] on Join game using code', async () => {
 		render(Page);
 
 		const code = page.getByRole('textbox', { name: 'Code' });
@@ -44,7 +44,7 @@ describe('/+page.svelte', () => {
 
 		expect(goto).toHaveBeenCalledTimes(1);
 		const url = /** @type {any} */ (goto).mock.calls[0][0];
-		expect(url).toMatch(/^\/lobby\/ABC123\?/);
+		expect(url).toMatch(/^\/ABC123\?/);
 		expect(url).toContain('name=');
 	});
 });

@@ -56,6 +56,9 @@ import { Coordinate } from './Coordinate.js';
  * @property {ActionHistoryEntry[]} actionHistory - Array of actions performed
  * @property {string} createdAt - ISO timestamp when game state was created
  * @property {string} lastModified - ISO timestamp when game state was last modified
+ * @property {string} phase - Current game phase ('lobby', 'land', 'citadel', 'done')
+ * @property {string|null} hostPlayerId - ID of the player who is the host
+ * @property {Object|null} setup - Game setup configuration
  */
 
 /**
@@ -102,6 +105,16 @@ export class GameState {
     
     /** @type {Date} */
     this.lastModified = new Date();
+    
+    // Game flow state
+    /** @type {'lobby'|'land'|'citadel'|'done'} */
+    this.phase = 'lobby';
+    
+    /** @type {string|null} */
+    this.hostPlayerId = null;
+    
+    /** @type {Object|null} */
+    this.setup = null;
   }
 
   /**
@@ -110,6 +123,42 @@ export class GameState {
    */
   get currentPlayer() {
     return this.players[this.currentPlayerIndex];
+  }
+
+  /**
+   * Check if a player is the host
+   * @param {string} playerId 
+   * @returns {boolean}
+   */
+  isHost(playerId) {
+    return this.hostPlayerId === playerId;
+  }
+
+  /**
+   * Set the host player
+   * @param {string} playerId 
+   */
+  setHost(playerId) {
+    this.hostPlayerId = playerId;
+    this._updateLastModified();
+  }
+
+  /**
+   * Set the game phase
+   * @param {'lobby'|'land'|'citadel'|'done'} phase 
+   */
+  setPhase(phase) {
+    this.phase = phase;
+    this._updateLastModified();
+  }
+
+  /**
+   * Set the game setup configuration
+   * @param {Object} setup 
+   */
+  setSetup(setup) {
+    this.setup = setup;
+    this._updateLastModified();
   }
 
   /**
@@ -135,6 +184,11 @@ export class GameState {
     newState.players = [...this.players];
     newState.currentPlayerIndex = this.currentPlayerIndex;
     newState.turnNumber = this.turnNumber;
+    
+    // Copy game flow state
+    newState.phase = this.phase;
+    newState.hostPlayerId = this.hostPlayerId;
+    newState.setup = this.setup ? { ...this.setup } : null;
     
     // Deep copy piece collections
     newState.playerStashes = new Map();
@@ -499,7 +553,10 @@ export class GameState {
       graveyard: this.graveyard.map(piece => piece.toJSON()),
       actionHistory: this.actionHistory,
       createdAt: this.createdAt.toISOString(),
-      lastModified: this.lastModified.toISOString()
+      lastModified: this.lastModified.toISOString(),
+      phase: this.phase,
+      hostPlayerId: this.hostPlayerId,
+      setup: this.setup
     };
   }
 
@@ -525,6 +582,11 @@ export class GameState {
     state.players = data.players;
     state.currentPlayerIndex = data.currentPlayerIndex;
     state.turnNumber = data.turnNumber;
+    
+    // Restore game flow state
+    state.phase = /** @type {'lobby'|'land'|'citadel'|'done'} */ (data.phase || 'lobby');
+    state.hostPlayerId = data.hostPlayerId || null;
+    state.setup = data.setup || null;
     
     // Restore player stashes
     state.playerStashes = new Map();

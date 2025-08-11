@@ -11,27 +11,34 @@
 		return code;
 	}
 
-		/** @param {{displayName:string, playerCount:number, config: any}} payload */
-		function handleCreate(payload) {
+	/** @param {{displayName:string, playerCount:number, config: any}} payload */
+	function handleCreate(payload) {
 		const code = generateGameCode();
-		const params = new URLSearchParams({
-			name: payload.displayName,
-			host: '1',
-			pc: String(payload.playerCount),
-			lpp: String(payload.config.landsPerPlayer),
-			ppp: String(payload.config.personalPiecesPerPlayer),
-			cpp: String(payload.config.communityPiecesPerPlayer),
-			variant: String(payload.config.variant || '')
-		});
-		goto(`/lobby/${code}?${params.toString()}`);
+		// Store game configuration in session storage for immediate access
+		// The component will handle creating the Firestore document with proper setup
+		sessionStorage.setItem('pendingGameCreation', JSON.stringify({
+			code,
+			hostName: payload.displayName,
+			setup: {
+				playerCount: payload.playerCount,
+				landsPerPlayer: payload.config.landsPerPlayer,
+				personalPiecesPerPlayer: payload.config.personalPiecesPerPlayer,
+				communityPiecesPerPlayer: payload.config.communityPiecesPerPlayer,
+				variant: payload.config.variant || ''
+			}
+		}));
+		goto(`/${code}`);
 	}
 
-		/** @param {{displayName:string, gameCode:string}} payload */
-		function handleJoin(payload) {
+	/** @param {{displayName:string, gameCode:string}} payload */
+	function handleJoin(payload) {
 		const code = (payload.gameCode || '').trim().toUpperCase();
 		if (!code) return;
-		const params = new URLSearchParams({ name: payload.displayName });
-		goto(`/lobby/${code}?${params.toString()}`);
+		// Store player name for immediate access
+		sessionStorage.setItem('pendingPlayerJoin', JSON.stringify({
+			playerName: payload.displayName
+		}));
+		goto(`/${code}`);
 	}
 </script>
 
