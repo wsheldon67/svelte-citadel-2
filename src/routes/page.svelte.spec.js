@@ -23,20 +23,24 @@ describe('/+page.svelte', () => {
 	it('navigates to /[code] on Create game with host params', async () => {
 		render(Page);
 
+		// Fill in the host form specifically
+		const hostSection = page.getByRole('group', { name: 'Host' });
+		const name = hostSection.getByRole('textbox', { name: 'Display name' });
+		await name.fill('TestPlayer');
+
 		const create = page.getByRole('button', { name: 'Create game' });
 		await create.click();
 
 		expect(goto).toHaveBeenCalledTimes(1);
 		const url = /** @type {any} */ (goto).mock.calls[0][0];
-		expect(url).toMatch(/^\/[A-Z0-9]{6}\?/);
-		expect(url).toContain('host=1');
-		expect(url).toContain('pc=');
+		expect(url).toMatch(/^\/[A-Z0-9]{6}$/);
 	});
 
 	it('navigates to /[code] on Join game using code', async () => {
 		render(Page);
 
-		const code = page.getByRole('textbox', { name: 'Code' });
+		const joinSection = page.getByRole('region', { name: 'Join a game' });
+		const code = joinSection.getByRole('textbox', { name: 'Code' });
 		await code.fill('ABC123');
 
 		const join = page.getByRole('button', { name: 'Join game' });
@@ -44,7 +48,6 @@ describe('/+page.svelte', () => {
 
 		expect(goto).toHaveBeenCalledTimes(1);
 		const url = /** @type {any} */ (goto).mock.calls[0][0];
-		expect(url).toMatch(/^\/ABC123\?/);
-		expect(url).toContain('name=');
+		expect(url).toMatch(/^\/ABC123$/);
 	});
 });

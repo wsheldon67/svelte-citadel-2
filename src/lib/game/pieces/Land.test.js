@@ -139,9 +139,8 @@ describe('LandPlace', () => {
   beforeEach(() => {
     land = new Land({ owner: 'player1' });
     landPlace = new LandPlace(land);
-    // Use a real GameState instance and override methods as needed
+    // Use a real GameState instance
     mockGameState = new (require('../engine/GameState.js').GameState)();
-    mockGameState.hasTerrain = (coord) => false;
     mockGameState.hasPiece = (coord) => false;
     mockGameState.setTerrain = (coord, piece) => { };
     mockGameState.setPiece = (coord, piece) => { };
@@ -170,8 +169,8 @@ describe('LandPlace', () => {
       const target = new Coordinate(0, 0);
       const targetCell = mockGameState.getCell(target);
 
-      // Mock terrain existing at target
-      mockGameState.hasTerrain = (coord) => coord.x === 0 && coord.y === 0;
+      // Set terrain at the target location
+      targetCell.setTerrain(new Land({ owner: 'player1' }));
 
       expect(() => {
         landPlace.check(targetCell, mockGameState, mockGameState);
@@ -180,48 +179,44 @@ describe('LandPlace', () => {
 
     it('should prevent placement where piece already exists', () => {
       const target = new Coordinate(0, 0);
+      const targetCell = mockGameState.getCell(target);
 
-      // Mock piece existing at target
-      mockGameState.hasPiece = (coord) => coord.x === 0 && coord.y === 0;
+      // Set piece at the target location
+      targetCell.setPiece(new Land({ owner: 'player1' }));
 
       expect(() => {
-        landPlace.check(target, mockGameState, mockGameState);
+        landPlace.check(targetCell, mockGameState, mockGameState);
       }).toThrow(RuleViolation);
     });
 
     it('should require adjacency to existing terrain (after first piece)', () => {
       const target = new Coordinate(5, 5); // Far from any terrain
+      const targetCell = mockGameState.getCell(target);
 
-
-      // Mock existing terrain at (0,0)
-      mockGameState.board.set('0,0', {
-        terrain: new Land({ owner: 'player1' }),
-        piece: null
-      });
+      // Set existing terrain at (0,0) 
+      const existingCoord = new Coordinate(0, 0);
+      const existingCell = mockGameState.getCell(existingCoord);
+      existingCell.setTerrain(new Land({ owner: 'player1' }));
 
       expect(() => {
-        landPlace.check(target, mockGameState, mockGameState);
+        landPlace.check(targetCell, mockGameState, mockGameState);
       }).toThrow(RuleViolation);
       expect(() => {
-        landPlace.check(target, mockGameState, mockGameState);
+        landPlace.check(targetCell, mockGameState, mockGameState);
       }).toThrow(/adjacent to existing terrain/);
     });
 
     it('should allow placement adjacent to existing terrain', () => {
       const target = new Coordinate(1, 0); // Adjacent to (0,0)
+      const targetCell = mockGameState.getCell(target);
 
-
-      // Mock existing terrain at (0,0)
-      mockGameState.board.set('0,0', {
-        terrain: new Land({ owner: 'player1' }),
-        piece: null
-      });
-
-      // Mock the adjacency check
-      mockGameState.isAdjacentToAnyTerrain = () => true;
+      // Set existing terrain at (0,0)
+      const existingCoord = new Coordinate(0, 0);
+      const existingCell = mockGameState.getCell(existingCoord);
+      existingCell.setTerrain(new Land({ owner: 'player1' }));
 
       expect(() => {
-        landPlace.check(target, mockGameState, mockGameState);
+        landPlace.check(targetCell, mockGameState, mockGameState);
       }).not.toThrow();
     });
   });
@@ -232,10 +227,10 @@ describe('LandPlace', () => {
     });
 
     it('should return true when terrain exists', () => {
-      mockGameState.board.set('0,0', {
-        terrain: new Land({ owner: 'player1' }),
-        piece: null
-      });
+      // Set terrain at (0,0)
+      const coord = new Coordinate(0, 0);
+      const cell = mockGameState.getCell(coord);
+      cell.setTerrain(new Land({ owner: 'player1' }));
 
       expect(mockGameState.hasAnyTerrain()).toBe(true);
     });
@@ -277,33 +272,32 @@ describe('LandPlace', () => {
   describe('perform', () => {
     it('should place the Land piece in terrain layer', () => {
       const target = new Coordinate(0, 0);
-      /** @type {import('../pieces/Piece.js').Piece|null} */
-      let placedPiece = null;
+      const targetCell = mockGameState.getCell(target);
+      
+      // Track placement
+      /** @type {import('../engine/Coordinate.js').Coordinate|null} */
       let placedCoord = null;
+      /** @type {import('../pieces/Land.js').Land|null} */
+      let placedPiece = null;
+
       // Mock setTerrain to capture placement
+      const originalSetTerrain = mockGameState.setTerrain;
       mockGameState.setTerrain = (coord, piece) => {
         placedCoord = coord;
-        placedPiece = piece;
+        placedPiece = /** @type {import('../pieces/Land.js').Land} */ (piece);
+        originalSetTerrain.call(mockGameState, coord, piece);
       };
 
-      // Mock piece copy
-      land.copy = () => {
-        const copy = new Land({ owner: land.owner, id: land.id });
-        copy._setCoordinate = (coord) => copy._coordinate = coord;
-        return copy;
-      };
-      // Explicitly type placedPiece as Land for TypeScript
-      /** @type {import('../pieces/Land.js').Land|null} */
-      placedPiece = null;
-
-      landPlace.perform(target, mockGameState);
+      landPlace.perform(targetCell, mockGameState);
 
       expect(placedCoord).toBe(target);
       expect(placedPiece).toBeDefined();
       if (placedPiece) {
-        // @ts-expect-error: TypeScript cannot infer type but runtime is correct
-        expect(placedPiece.type).toBe('Land');
+        expect(/** @type {import('../pieces/Land.js').Land} */ (placedPiece).type).toBe('Land');
       }
+      
+      // Restore original method
+      mockGameState.setTerrain = originalSetTerrain;
     });
   });
 
