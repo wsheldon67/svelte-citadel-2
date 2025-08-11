@@ -74,42 +74,6 @@ export class BuilderMove extends Move {
     return 'Move Builder one square orthogonally';
   }
 
-  /**
-   * Get all valid move targets for the Builder
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    if (!this.piece.coordinate) {
-      return [];
-    }
-
-    const targets = [];
-    const directions = [
-      { x: 0, y: 1 },   // North
-      { x: 1, y: 0 },   // East
-      { x: 0, y: -1 },  // South
-      { x: -1, y: 0 }   // West
-    ];
-
-    for (const direction of directions) {
-      const target = new Coordinate(
-        this.piece.coordinate.x + direction.x,
-        this.piece.coordinate.y + direction.y
-      );
-      
-      // Must have terrain to move to (unless piece can move to water)
-      if (gameState.hasTerrain(target) || this.canMoveToWater()) {
-        const targetPiece = gameState.getPieceAt(target);
-        // Can move if empty or has enemy piece (can capture)
-        if (!targetPiece || (targetPiece.owner !== this.piece.owner && this.canCapture())) {
-          targets.push(target);
-        }
-      }
-    }
-
-    return targets;
-  }
 }
 
 /**
@@ -188,46 +152,6 @@ export class BuilderMoveTerrain extends Action {
   }
 
   /**
-   * Get all valid targets for moving terrain from the source coordinate
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    if (!this.piece.coordinate || !this.sourceCoordinate) {
-      return [];
-    }
-
-    // Check if Builder is adjacent to source and source has land
-    if (!this.piece.isOrthogonallyAdjacentTo(this.sourceCoordinate)) {
-      return [];
-    }
-
-    const sourceTerrain = gameState.getTerrainAt(this.sourceCoordinate);
-    if (!sourceTerrain || sourceTerrain.type !== 'Land') {
-      return [];
-    }
-
-    // Get all orthogonally adjacent positions to the source terrain
-    const targets = [];
-    const directions = [
-      { x: 0, y: 1 },   // North
-      { x: 1, y: 0 },   // East
-      { x: 0, y: -1 },  // South
-      { x: -1, y: 0 }   // West
-    ];
-
-    for (const direction of directions) {
-      const target = new Coordinate(
-        this.sourceCoordinate.x + direction.x,
-        this.sourceCoordinate.y + direction.y
-      );
-      targets.push(target);
-    }
-
-    return targets;
-  }
-
-  /**
    * Get a human-readable description of this action
    * @returns {string}
    */
@@ -279,39 +203,6 @@ export class BuilderRemoveTerrain extends Action {
       gameState.moveToGraveyard(this.piece);
       // Note: The piece's coordinate should be updated by the game engine
     }
-  }
-
-  /**
-   * Get all valid targets for terrain removal
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    if (!this.piece.coordinate) {
-      return [];
-    }
-
-    const targets = [];
-    const directions = [
-      { x: 0, y: 1 },   // North
-      { x: 1, y: 0 },   // East
-      { x: 0, y: -1 },  // South
-      { x: -1, y: 0 }   // West
-    ];
-
-    for (const direction of directions) {
-      const target = new Coordinate(
-        this.piece.coordinate.x + direction.x,
-        this.piece.coordinate.y + direction.y
-      );
-      const terrain = gameState.getTerrainAt(target);
-      
-      if (terrain && terrain.type === 'Land') {
-        targets.push(target);
-      }
-    }
-
-    return targets;
   }
 
   /**
@@ -375,45 +266,6 @@ export class BuilderPlaceTerrain extends Action {
 
     // Place the land tile
     gameState.setTerrain(target, landTile);
-  }
-
-  /**
-   * Get all valid targets for terrain placement
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    if (!this.piece.coordinate) {
-      return [];
-    }
-
-    // Check if land is available
-    const hasLand = gameState.communityPool.some(piece => piece.type === 'Land');
-    if (!hasLand) {
-      return [];
-    }
-
-    const targets = [];
-    const directions = [
-      { x: 0, y: 1 },   // North
-      { x: 1, y: 0 },   // East
-      { x: 0, y: -1 },  // South
-      { x: -1, y: 0 }   // West
-    ];
-
-    for (const direction of directions) {
-      const target = new Coordinate(
-        this.piece.coordinate.x + direction.x,
-        this.piece.coordinate.y + direction.y
-      );
-      
-      // Must be water (no terrain)
-      if (!gameState.hasTerrain(target)) {
-        targets.push(target);
-      }
-    }
-
-    return targets;
   }
 
   /**

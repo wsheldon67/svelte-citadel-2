@@ -126,57 +126,6 @@ export class LandPlace extends Place {
   }
 
   /**
-   * Get all valid targets for placing Land
-   * @param {import('../engine/GameState.js').GameState} gameState - The current game state
-   * @returns {import('../engine/Coordinate.js').Coordinate[]} Array of valid target coordinates
-   */
-  getValidTargets(gameState) {
-    const validTargets = [];
-
-    // Check if there's any terrain on the board
-    const hasAnyTerrain = this.hasAnyTerrainOnBoard(gameState);
-
-    if (!hasAnyTerrain) {
-      // First piece can be placed anywhere - but let's limit to a reasonable area
-      // around origin for practical purposes
-      for (let x = -10; x <= 10; x++) {
-        for (let y = -10; y <= 10; y++) {
-          const coord = new Coordinate(x, y);
-          if (!gameState.hasTerrain(coord) && !gameState.hasPiece(coord)) {
-            validTargets.push(coord);
-          }
-        }
-      }
-    } else {
-      // Find all coordinates adjacent to existing terrain
-      const checkedCoords = new Set();
-
-      for (const [key, cell] of gameState.board) {
-        if (cell.terrain) {
-          const terrainCoord = cell.terrain.coordinate;
-          if (terrainCoord) {
-            const adjacentCoords = terrainCoord.getAllAdjacent();
-
-            for (const coord of adjacentCoords) {
-              const coordKey = coord.key;
-              if (!checkedCoords.has(coordKey)) {
-                checkedCoords.add(coordKey);
-
-                // Valid if no terrain and no piece at this location
-                if (!gameState.hasTerrain(coord) && !gameState.hasPiece(coord)) {
-                  validTargets.push(coord);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return validTargets;
-  }
-
-  /**
    * Get a human-readable description of this action
    * @returns {string}
    */

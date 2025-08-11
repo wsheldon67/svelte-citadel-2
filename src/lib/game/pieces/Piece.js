@@ -153,18 +153,6 @@ export class Piece {
   }
 
   /**
-   * Get all valid action targets for this piece
-   * This should be overridden by subclasses to implement piece-specific logic
-   * @param {import('../engine/GameState.js').GameState} gameState
-   * @returns {Coordinate[]}
-   */
-  getValidTargets(gameState) {
-    // Base implementation returns empty array
-    // Subclasses should override this method
-    return [];
-  }
-
-  /**
    * Get all available actions for this piece
    * This should be overridden by subclasses to return their action classes
    * @returns {Function[]} Array of Action constructor functions
