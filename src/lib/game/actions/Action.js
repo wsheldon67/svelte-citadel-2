@@ -1,5 +1,8 @@
 import { RuleViolation } from '../engine/RuleViolation.js';
 import { Coordinate } from '../engine/Coordinate.js';
+import { GameState } from '../engine/GameState.js';
+import { db } from '../../firebase.js';
+import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
 
 /**
  * Base class for all actions that pieces can perform.
@@ -40,6 +43,40 @@ export class Action {
   perform(targetCell, gameState) {
     // Base implementation - subclasses should override
     throw new Error('Action.perform() must be implemented by subclasses');
+  }
+
+  /**
+   * Update Firestore with the current game state after an action
+   * This should be called by subclasses after they perform their action
+   * @param {import('../engine/GameState.js').GameState} gameState - The game state to save
+   * @param {Function} [pieceFromJSON] - Function to recreate pieces from JSON
+   */
+  async updateFirestore(gameState, pieceFromJSON) {
+    const gameId = gameState.gameId;
+    if (!gameId) {
+      // No game ID means this is a local-only game state, skip Firestore update
+      return;
+    }
+
+    if (!pieceFromJSON) {
+      // No pieceFromJSON function provided, can't safely update Firestore
+      console.warn('Cannot update Firestore without pieceFromJSON function');
+      return;
+    }
+
+    // Update Firestore with the action
+    const gameRef = doc(db, 'games', gameId);
+    await runTransaction(db, async (tx) => {
+      const snap = await tx.get(gameRef);
+      const data = snap.data();
+      if (!data) throw new Error('Game not found');
+      
+      // Use the current game state (which already has the action applied)
+      tx.update(gameRef, {
+        state: gameState.toJSON(),
+        updatedAt: serverTimestamp()
+      });
+    });
   }
 
   /**

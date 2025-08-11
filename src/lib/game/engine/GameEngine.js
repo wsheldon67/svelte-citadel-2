@@ -100,9 +100,10 @@ export class GameEngine {
    * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
    * @param {import('../actions/Action.js').Action} action - The action to execute
    * @param {import('./Cell.js').Cell} targetCell - The target cell
+   * @param {Function} [pieceFromJSON] - Optional function to recreate pieces from JSON for Firestore updates
    * @throws {RuleViolation} If the action is invalid
    */
-  executeAction(piece, action, targetCell) {
+  executeAction(piece, action, targetCell, pieceFromJSON) {
     // First validate the action
     this.checkAction(piece, action, targetCell);
     
@@ -116,6 +117,42 @@ export class GameEngine {
     if (this.variant?.onAction) {
       const last = this.gameState.actionHistory[this.gameState.actionHistory.length - 1];
       try { this.variant.onAction(last, this.gameState); } catch {}
+    }
+
+    // Update Firestore if game ID is present and pieceFromJSON is provided
+    if (this.gameState.gameId && pieceFromJSON) {
+      // Return a promise for Firestore update, but don't make the main method async
+      action.updateFirestore(this.gameState, pieceFromJSON).catch(console.error);
+    }
+  }
+
+  /**
+   * Execute an action on the game state and wait for Firestore update to complete
+   * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
+   * @param {import('../actions/Action.js').Action} action - The action to execute
+   * @param {import('./Cell.js').Cell} targetCell - The target cell
+   * @param {Function} [pieceFromJSON] - Optional function to recreate pieces from JSON for Firestore updates
+   * @throws {RuleViolation} If the action is invalid
+   */
+  async executeActionAsync(piece, action, targetCell, pieceFromJSON) {
+    // First validate the action
+    this.checkAction(piece, action, targetCell);
+    
+    // If validation passes, apply the action to the real game state
+    action.perform(targetCell, this.gameState);
+    
+    // Update the piece's game state reference
+    piece._setGameState(this.gameState);
+
+    // Variant post-action hook
+    if (this.variant?.onAction) {
+      const last = this.gameState.actionHistory[this.gameState.actionHistory.length - 1];
+      try { this.variant.onAction(last, this.gameState); } catch {}
+    }
+
+    // Update Firestore if game ID is present and pieceFromJSON is provided
+    if (this.gameState.gameId && pieceFromJSON) {
+      await action.updateFirestore(this.gameState, pieceFromJSON);
     }
   }
 

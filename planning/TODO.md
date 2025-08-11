@@ -56,9 +56,10 @@
   - [ ] Interactive land tile placement
   - [ ] Citadel placement with connectivity validation
   - [x] **COMPLETED**: Updated LandPhase component to utilize proper Land.js class and LandPlace action validation, including adjacency rules for terrain placement
-  - [ ] Test game start thru land placement using playwright.
+  - [ ] Refactor Actions to update firestore directly.
   - [ ] Move `placeLand()` out of `+page.svelte`
   - [ ] Move `placeCitadel()` out of `+page.svelte`
+  - [ ] Test game start thru land placement using playwright.
   - [ ] Write playwright tests for lobby
   - [ ] Write playwright tests for land placement
   - [ ] Write playwright tests for citadel placement
@@ -178,6 +179,7 @@
 - [x] Implement action history storage
 - [x] Add game state serialization (JSON) for save/load functionality
 - [x] Create game recreation from serialized data with action replay
+- [x] **COMPLETED**: Updated Action.perform() base class to support Firestore integration - actions can now automatically update Firestore when a game ID is present, enabling real-time multiplayer synchronization while maintaining backward compatibility for local-only games
 - [ ] Add user account system (anonymous + upgrade)
   - [x] Anonymous auth for visitors
   - [ ] Upgrade/linked accounts

@@ -102,6 +102,7 @@
       
       // Initialize game state
       const initState = new GameState();
+      initState.setGameId(code);
       initState.setPhase('lobby');
       initState.setSetup(pendingCreation.setup);
       initState.setHost(auth.currentUser?.uid || '');
@@ -115,6 +116,7 @@
       // Join existing game
       const data = gameSnap.data();
       const existingState = GameState.fromJSON(data.state, pieceFromJSON);
+      existingState.setGameId(code);
       
       // Add current user if not already a player and game is in lobby
       const myId = auth.currentUser?.uid || '';
@@ -135,6 +137,7 @@
       if (!data) return;
       
       gameState = GameState.fromJSON(data.state, pieceFromJSON);
+      gameState.setGameId(code);
       isLoading = false;
     });
   }
@@ -149,6 +152,7 @@
       if (!data) throw new Error('Game not found');
       
       const state = GameState.fromJSON(data.state, pieceFromJSON);
+      state.setGameId(code);
       state.setPhase('land');
       
       tx.update(gameRef, {
@@ -167,6 +171,7 @@
       if (!data) throw new Error('Game not found');
       
       const state = GameState.fromJSON(data.state, pieceFromJSON);
+      state.setGameId(code);
       if (state.currentPlayer !== myId) throw new Error('Not your turn');
 
       // Create Land piece and validate placement using proper Land rules
@@ -214,6 +219,7 @@
       if (!data) throw new Error('Game not found');
       
       const state = GameState.fromJSON(data.state, pieceFromJSON);
+      state.setGameId(code);
       if (state.currentPlayer !== myId) throw new Error('Not your turn');
       if (!state.hasTerrain(coordinate)) throw new Error('Must be on land');
       if (state.hasPiece(coordinate)) throw new Error('Cell occupied');

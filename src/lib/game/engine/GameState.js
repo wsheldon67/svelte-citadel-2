@@ -47,6 +47,7 @@ import { Cell } from './Cell.js';
 
 /**
  * @typedef {Object} GameStateJSON
+ * @property {string|null} gameId - The game identifier for Firestore
  * @property {BoardCellJSON[]} board - Array of board cells with pieces/terrain
  * @property {string[]} players - Array of player identifiers
  * @property {PlayerInfo[]} playerInfo - Array of player info objects with id and name
@@ -73,6 +74,10 @@ export class GameState {
    */
   constructor(options = {}) {
     this.isSimulation = options.isSimulation || false;
+    
+    // Game identifier for Firestore
+    /** @type {string|null} */
+    this.gameId = null;
     
     // Core game state
     /** @type {Map<string, Cell>} */
@@ -163,6 +168,15 @@ export class GameState {
    */
   setSetup(setup) {
     this.setup = setup;
+    this._updateLastModified();
+  }
+
+  /**
+   * Set the game ID for Firestore operations
+   * @param {string} gameId 
+   */
+  setGameId(gameId) {
+    this.gameId = gameId;
     this._updateLastModified();
   }
 
@@ -584,6 +598,7 @@ export class GameState {
     }
 
     return {
+      gameId: this.gameId,
       board: boardArray,
       players: this.players,
       playerInfo: this.playerInfo,
@@ -609,6 +624,9 @@ export class GameState {
    */
   static fromJSON(data, pieceFromJSON) {
     const state = new GameState();
+    
+    // Restore game ID
+    state.gameId = data.gameId || null;
     
     // Restore board
     state.board = new Map();
