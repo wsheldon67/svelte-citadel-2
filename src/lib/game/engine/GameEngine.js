@@ -20,7 +20,7 @@ import { Coordinate } from './Coordinate.js';
  * Enhanced game engine that uses the new persistent state design.
  * Maintains only initial configuration + actions, with full state derived via replay.
  */
-export class GameEngine2 {
+export class GameEngine {
   /**
    * @param {Function} pieceFromJSON - Function to recreate pieces from JSON
    * @param {PersistentGameState} [persistentState] - Persistent game state
@@ -382,11 +382,11 @@ export class GameEngine2 {
    * @param {import('./PersistentGameState.js').PersistentGameStateJSON} data
    * @param {Function} pieceFromJSON
    * @param {import('../variants/Variant.js').Variant} [variant]
-   * @returns {GameEngine2}
+   * @returns {GameEngine}
    */
   static fromJSON(data, pieceFromJSON, variant) {
     const persistentState = PersistentGameState.fromJSON(data);
-    return new GameEngine2(pieceFromJSON, persistentState, variant);
+    return new GameEngine(pieceFromJSON, persistentState, variant);
   }
 
   /**

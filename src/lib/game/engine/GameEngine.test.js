@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'vitest';
-import { GameEngine2 } from './GameEngine2.js';
+import { GameEngine } from './GameEngine.js';
 import { PersistentGameState } from './PersistentGameState.js';
 import { Land } from '../pieces/Land.js';
 import { Coordinate } from './Coordinate.js';
@@ -19,7 +19,7 @@ function mockPieceFromJSON(/** @type {any} */ data) {
 
 describe('GameEngine2 - Persistent State Design', () => {
   test('should maintain only initial config and actions', () => {
-    const engine = new GameEngine2(mockPieceFromJSON);
+    const engine = new GameEngine(mockPieceFromJSON);
     
     // Add some initial configuration
     engine.addPlayer('player1', 'Alice');
@@ -52,7 +52,7 @@ describe('GameEngine2 - Persistent State Design', () => {
   });
 
   test('should derive full state from initial config + actions', () => {
-    const engine = new GameEngine2(mockPieceFromJSON);
+    const engine = new GameEngine(mockPieceFromJSON);
     
     // Set up initial state
     engine.addPlayer('player1', 'Alice');
@@ -76,7 +76,7 @@ describe('GameEngine2 - Persistent State Design', () => {
   });
 
   test('should record actions and replay them correctly', () => {
-    const engine = new GameEngine2(mockPieceFromJSON);
+    const engine = new GameEngine(mockPieceFromJSON);
     
     // Set up initial state  
     engine.addPlayer('player1', 'Alice');
@@ -120,7 +120,7 @@ describe('GameEngine2 - Persistent State Design', () => {
     
     // Create a new engine from the serialized state
     const json = engine.toJSON();
-    const engine2 = GameEngine2.fromJSON(json, mockPieceFromJSON);
+    const engine2 = GameEngine.fromJSON(json, mockPieceFromJSON);
     
     // Verify the new engine has the same derived state
     const newCurrentState = engine2.getCurrentState();
@@ -131,7 +131,7 @@ describe('GameEngine2 - Persistent State Design', () => {
   });
 
   test('serialized state should be minimal', () => {
-    const engine = new GameEngine2(mockPieceFromJSON);
+    const engine = new GameEngine(mockPieceFromJSON);
     
     // Set up a complex game state
     engine.addPlayer('player1', 'Alice');
@@ -178,7 +178,7 @@ describe('GameEngine2 - Persistent State Design', () => {
     expect(jsonString.length).toBeLessThan(1000); // Should be quite compact
     
     // Verify it can be reconstructed
-    const engine2 = GameEngine2.fromJSON(json, mockPieceFromJSON);
+    const engine2 = GameEngine.fromJSON(json, mockPieceFromJSON);
     const reconstructedState = engine2.getCurrentState();
     
     expect(reconstructedState.players).toEqual(['player1', 'player2']);

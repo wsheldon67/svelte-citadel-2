@@ -1,5 +1,5 @@
 // Game Engine Core
-export { GameEngine2 as GameEngine } from './engine/GameEngine2.js';
+export { GameEngine } from './engine/GameEngine.js';
 export { GameState } from './engine/GameState.js';
 export { Coordinate } from './engine/Coordinate.js';
 export { RuleViolation } from './engine/RuleViolation.js';
@@ -15,9 +15,6 @@ export { Soldier } from './pieces/Soldier.js';
 export { Builder } from './pieces/Builder.js';
 export { Citadel } from './pieces/Citadel.js';
 export { Land } from './pieces/Land.js';
-
-// Testing
-// export { runBasicTest } from './engine/BasicTest.js'; // Temporarily disabled - needs GameEngine2 compatibility
 
 // Variants
 export { Variant } from './variants/Variant.js';
