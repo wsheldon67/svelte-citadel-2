@@ -232,8 +232,9 @@ export class Piece {
     });
   }
 
+  layer = 1
+
   isTerrain() {
-    // Default implementation - can be overridden by terrain pieces
-    return false;
+    return this.layer === 0;
   }
 }

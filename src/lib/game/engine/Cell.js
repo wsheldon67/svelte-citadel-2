@@ -42,6 +42,17 @@ export class Cell {
   }
 
   /**
+   * Check if this cell has a piece at the specified layer
+   * @param {number} layer - The layer to check
+   * @returns {boolean}
+   */
+  hasPieceAtLayer(layer) {
+    if (layer === 0) return this.hasTerrain();
+    if (layer === 1) return this.hasPiece();
+    return false;
+  }
+
+  /**
    * Check if this cell is water (no terrain)
    * @returns {boolean}
    */

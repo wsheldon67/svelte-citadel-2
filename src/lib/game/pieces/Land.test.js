@@ -91,9 +91,9 @@ describe('Land', () => {
     });
   });
 
-  describe('isTerrain', () => {
-    it('should return true (Land is terrain)', () => {
-      expect(land.isTerrain()).toBe(true);
+  describe('layer', () => {
+    it('should return 0 (Land is terrain)', () => {
+      expect(land.layer).toBe(0);
     });
   });
 

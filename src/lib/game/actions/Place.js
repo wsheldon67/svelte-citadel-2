@@ -18,22 +18,12 @@ export class Place extends Action {
     // Skip base class validation since placement doesn't require the piece to already be on the board
     // super.check(targetCell, currentGame, newGame);
     
-    // Check if there's already a piece at this location
-    if (targetCell.hasPiece()) {
-      throw new RuleViolation('Cannot place piece where a piece already exists');
+    if (targetCell.hasPieceAtLayer(this.piece.layer)) {
+      throw new RuleViolation(`There is already piece on the same layer at ${targetCell.coordinate}`);
     }
-    
-    // Check terrain layer stacking rules
-    if (this.piece.type === 'Land') {
-      // Land is terrain - cannot place where terrain already exists
-      if (targetCell.hasTerrain()) {
-        throw new RuleViolation('Cannot place terrain where terrain already exists');
-      }
-    } else {
-      // Regular pieces need terrain to place on
-      if (!targetCell.hasTerrain() && !this.piece.isTerrain()) {
-        throw new RuleViolation('Cannot place piece where no terrain exists (pieces need to be on land)');
-      }
+
+    if (this.piece.layer > 0 && !targetCell.hasPieceAtLayer(this.piece.layer - 1)) {
+      throw new RuleViolation(`Cannot place piece on layer ${this.piece.layer} without a piece on layer ${this.piece.layer - 1}`);
     }
   }
   

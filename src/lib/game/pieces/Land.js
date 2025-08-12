@@ -1,6 +1,5 @@
 import { Piece } from './Piece.js';
 import { Place } from '../actions/Place.js';
-import { Coordinate } from '../engine/Coordinate.js';
 import { RuleViolation } from '../engine/Errors.js';
 
 /**
@@ -29,13 +28,7 @@ export class Land extends Piece {
     return [LandPlace];
   }
 
-  /**
-   * Check if this is a terrain piece
-   * @returns {boolean} Always true for Land
-   */
-  isTerrain() {
-    return true;
-  }
+  layer = 0
 }
 
 /**
@@ -55,11 +48,6 @@ export class LandPlace extends Place {
 
     // Call base class validation
     super.check(targetCell, currentGame, newGame);
-    
-    // Land cannot be placed where terrain already exists
-    if (targetCell.hasTerrain()) {
-      throw new RuleViolation('Cannot place Land where terrain already exists');
-    }
 
     // Check if there's any terrain on the board
     if (currentGame.hasAnyTerrain()) {

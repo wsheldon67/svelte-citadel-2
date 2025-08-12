@@ -1,6 +1,6 @@
 import { Piece } from './Piece.js';
 import { Move } from '../actions/Move.js';
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 import { Coordinate } from '../engine/Coordinate.js';
 
 /**
@@ -41,18 +41,9 @@ export class BirdMove extends Move {
     // Call base class validation (includes basic move rules)
     super.check(targetCell, currentGame, newGame);
     
-    if (!this.piece.coordinate) {
-      throw new RuleViolation('Bird must be on the board to move');
-    }
-    
-    // Bird can only move orthogonally (no gaps allowed for adjacency, but line movement allowed)
-    if (!this.piece.isOrthogonalTo(targetCell, { gapsAllowed: false })) {
+    // Bird can only move orthogonally, without crossing gaps or pieces
+    if (!this.piece.isOrthogonalTo(targetCell)) {
       throw new RuleViolation('Bird can only move to orthogonal tiles');
-    }
-    
-    // Check if the path is clear (no pieces blocking the way)
-    if (!this.piece.isPathClear(targetCell.coordinate)) {
-      throw new RuleViolation('Bird cannot jump over pieces');
     }
   }
 

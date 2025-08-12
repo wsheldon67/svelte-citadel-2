@@ -1,5 +1,5 @@
 import { Action } from './Action.js';
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 
 /**
  * Base Move action that provides common movement functionality.
@@ -16,26 +16,23 @@ export class Move extends Action {
   check(targetCell, currentGame, newGame) {
     // Call base class validation
     super.check(targetCell, currentGame, newGame);
+
+
+    if (!this.piece.coordinate) {
+      throw new RuleViolation('Must be on the board to move');
+    }
     
-    // Can't move to the same position
+
     if (this.piece.coordinate && this.piece.coordinate.equals(targetCell.coordinate)) {
       throw new RuleViolation('Cannot move to the same position');
     }
     
-    // Must have terrain (land or turtle) to move to, unless the piece itself can go in water
-    if (!targetCell.hasTerrain() && !this.canMoveToWater()) {
-      throw new RuleViolation('Cannot move to water without terrain');
+    if (targetCell.hasPieceAtLayer(this.piece.layer)) {
+      throw new RuleViolation(`There is already piece on the same layer at ${targetCell.coordinate}`);
     }
-    
-    // Check for piece collision (unless this move captures)
-    if (targetCell.hasPiece()) {
-      if (targetCell.getPieceOwner() === this.piece.owner) {
-        throw new RuleViolation('Cannot move to a square occupied by your own piece');
-      }
-      // If enemy piece, this would be a capture - validate capture rules
-      if (!this.canCapture()) {
-        throw new RuleViolation('This piece cannot capture');
-      }
+
+    if (this.piece.layer > 0 && !targetCell.hasPieceAtLayer(this.piece.layer - 1)) {
+      throw new RuleViolation(`Cannot move piece to layer ${this.piece.layer} without a piece on layer ${this.piece.layer - 1}`);
     }
   }
 
@@ -79,22 +76,5 @@ export class Move extends Action {
       }
     });
   }
-
-  /**
-   * Check if this piece can move to water
-   * Override in subclasses for pieces like Turtle
-   * @returns {boolean}
-   */
-  canMoveToWater() {
-    return false;
-  }
-
-  /**
-   * Check if this piece can capture enemy pieces
-   * Override in subclasses to disable capturing
-   * @returns {boolean}
-   */
-  canCapture() {
-    return true;
-  }
+  
 }
