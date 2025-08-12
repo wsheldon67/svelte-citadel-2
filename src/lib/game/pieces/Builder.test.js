@@ -68,8 +68,10 @@ describe('Builder', () => {
       const builderCoord = new Coordinate(0, 0);
       const targetCoord = new Coordinate(1, 1);
       
+      // Place terrain at both positions so the layer check passes
       gameState.setTerrain(builderCoord, landTile);
       gameState.setPiece(builderCoord, builder);
+      gameState.setTerrain(targetCoord, new Piece({ type: 'Land', owner: 'neutral' }));
 
       const move = new BuilderMove(builder);
       const targetCell = gameState.getCell(targetCoord);

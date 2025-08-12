@@ -49,6 +49,11 @@ export class LandPlace extends Place {
     // Call base class validation
     super.check(targetCell, currentGame, newGame);
 
+    // Land cannot be placed where there's already a piece (different from Builder's special capture ability)
+    if (targetCell.hasPiece()) {
+      throw new RuleViolation('Land cannot be placed where a piece already exists');
+    }
+
     // Check if there's any terrain on the board
     if (currentGame.hasAnyTerrain()) {
       // Must be adjacent to existing terrain - use Cell's adjacency check

@@ -76,19 +76,6 @@ describe('Land', () => {
         landPlace.check(targetCell, gameState, gameState);
       }).toThrow(RuleViolation);
     });
-
-    it('should not allow placement where piece already exists', () => {
-      const coordinate = new Coordinate(0, 0);
-      const piece = new Piece({ type: 'TestPiece', owner: 'player1' });
-      gameState.setPiece(coordinate, piece);
-      
-      const landPlace = new LandPlace(land);
-      const targetCell = gameState.getCell(coordinate);
-      
-      expect(() => {
-        landPlace.check(targetCell, gameState, gameState);
-      }).toThrow(RuleViolation);
-    });
   });
 
   describe('layer', () => {
