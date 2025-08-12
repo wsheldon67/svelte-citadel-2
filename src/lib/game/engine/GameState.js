@@ -252,10 +252,23 @@ export class GameState {
    * Set the terrain at a coordinate
    * @param {Coordinate} coordinate
    * @param {import('../pieces/Piece.js').Piece|null} terrainPiece
+   * @param {import('../pieces/Piece.js').Piece} [actingPiece] - The piece performing this action (for recording)
    */
-  setTerrain(coordinate, terrainPiece) {
+  setTerrain(coordinate, terrainPiece, actingPiece) {
     const cell = this.getCell(coordinate);
     cell.setTerrain(terrainPiece);
+    
+    // Record action if acting piece is provided and terrain is being placed
+    if (actingPiece && terrainPiece) {
+      this.addAction({
+        type: 'place_terrain',
+        pieceId: actingPiece.id,
+        data: {
+          at: coordinate.toString()
+        }
+      });
+    }
+    
     this._updateLastModified();
   }
 
@@ -462,16 +475,62 @@ export class GameState {
   /**
    * Remove terrain from a coordinate and return it
    * @param {Coordinate} coordinate
+   * @param {import('../pieces/Piece.js').Piece} [actingPiece] - The piece performing this action (for recording)
    * @returns {import('../pieces/Piece.js').Piece|null} The removed terrain piece or null
    */
-  removeTerrain(coordinate) {
+  removeTerrain(coordinate, actingPiece) {
     const cell = this.getCell(coordinate);
     const terrain = cell.terrain;
     if (terrain) {
       cell.setTerrain(null);
+      
+      // Record action if acting piece is provided
+      if (actingPiece) {
+        this.addAction({
+          type: 'remove_terrain',
+          pieceId: actingPiece.id,
+          data: {
+            at: coordinate.toString()
+          }
+        });
+      }
+      
       this._updateLastModified();
     }
     return terrain;
+  }
+
+  /**
+   * Move terrain from one position to another
+   * @param {Coordinate} fromCoordinate - Source coordinate
+   * @param {Coordinate} toCoordinate - Target coordinate
+   * @param {import('../pieces/Piece.js').Piece} [actingPiece] - The piece performing this action (for recording)
+   */
+  moveTerrain(fromCoordinate, toCoordinate, actingPiece) {
+    // Get the terrain to move (without recording action)
+    const terrain = this.removeTerrain(fromCoordinate);
+    
+    // If target has a piece, capture it
+    const targetCell = this.getCell(toCoordinate);
+    if (targetCell.hasPiece() && targetCell.piece) {
+      this.moveToGraveyard(targetCell.piece);
+      targetCell.setPiece(null);
+    }
+    
+    // Place the terrain at the target (without recording action)
+    this.setTerrain(toCoordinate, terrain);
+    
+    // Record action if acting piece is provided
+    if (actingPiece && terrain) {
+      this.addAction({
+        type: 'move_terrain',
+        pieceId: actingPiece.id,
+        data: {
+          from: fromCoordinate.toString(),
+          to: toCoordinate.toString()
+        }
+      });
+    }
   }
 
   /**
@@ -486,9 +545,10 @@ export class GameState {
   /**
    * Remove both terrain and piece at a coordinate, handling graveyard/community pool appropriately
    * @param {Coordinate} coordinate
+   * @param {import('../pieces/Piece.js').Piece} [actingPiece] - The piece performing this action (for recording)
    * @returns {{terrain: import('../pieces/Piece.js').Piece|null, piece: import('../pieces/Piece.js').Piece|null}}
    */
-  removeCellContents(coordinate) {
+  removeCellContents(coordinate, actingPiece) {
     const cell = this.getCell(coordinate);
     const { terrain, piece } = cell.clear();
 
@@ -500,6 +560,17 @@ export class GameState {
     // Move piece to graveyard if it exists
     if (piece) {
       this.moveToGraveyard(piece);
+    }
+
+    // Record action if acting piece is provided and terrain was removed
+    if (actingPiece && terrain) {
+      this.addAction({
+        type: 'remove_terrain',
+        pieceId: actingPiece.id,
+        data: {
+          at: coordinate.toString()
+        }
+      });
     }
 
     this._updateLastModified();
@@ -575,6 +646,42 @@ export class GameState {
     if (!this.isSimulation) {
       this.lastModified = new Date();
     }
+  }
+
+  // Action-recording convenience methods for piece actions
+  // These methods combine low-level state changes with action recording
+
+  /**
+   * Place terrain and record the action (convenience method for piece actions)
+   * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
+   * @param {Coordinate} coordinate - Where to place the terrain
+   * @param {import('../pieces/Piece.js').Piece} terrainPiece - The terrain piece to place
+   */
+  recordPlaceTerrain(piece, coordinate, terrainPiece) {
+    this.setTerrain(coordinate, terrainPiece, piece);
+  }
+
+  /**
+   * Remove terrain and record the action (convenience method for piece actions)
+   * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
+   * @param {Coordinate} coordinate - Where to remove terrain from
+   * @returns {import('../pieces/Piece.js').Piece|null} The removed terrain piece
+   */
+  recordRemoveTerrain(piece, coordinate) {
+    // Remove all contents from the target cell
+    this.removeCellContents(coordinate, piece);
+    
+    return null; // Contents were moved to community pool/graveyard
+  }
+
+  /**
+   * Move terrain from one position to another and record the action (convenience method for piece actions)
+   * @param {import('../pieces/Piece.js').Piece} piece - The piece performing the action
+   * @param {Coordinate} fromCoordinate - Source coordinate
+   * @param {Coordinate} toCoordinate - Target coordinate
+   */
+  recordMoveTerrain(piece, fromCoordinate, toCoordinate) {
+    this.moveTerrain(fromCoordinate, toCoordinate, piece);
   }
 
   /**

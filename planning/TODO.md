@@ -18,6 +18,7 @@
 - [x] Add state copying functionality for "what-if" scenarios
 - [ ] Create undo/redo functionality
 - [x] Design extensible piece authoring API (intuitive for beginners and LLMs)
+- [x] **COMPLETED**: Simplified terrain manipulation API - gameState.setTerrain(), removeTerrain(), and moveTerrain() now automatically record actions when an acting piece is provided, eliminating need for manual gameState.addAction() calls in piece implementations
 - [x] **COMPLETED**: Simplified player management by storing both player IDs and display names directly in GameState, removing the need for separate playerNames mapping in Svelte components
 - [x] Implement base `Piece` class with flexible action system
 - [x] Create pluggable action classes (`Move`, `Capture`, `Place`, custom actions)

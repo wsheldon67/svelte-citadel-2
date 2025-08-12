@@ -118,34 +118,8 @@ export class BuilderMoveTerrain extends Action {
       throw new RuleViolation('Source coordinate must be specified for terrain movement');
     }
 
-    // Get the terrain to move
-    const terrain = gameState.removeTerrain(this.sourceCoordinate);
-    
-    // If there was a piece on the source terrain, move it to graveyard
-    const sourceCell = gameState.getCell(this.sourceCoordinate);
-    if (sourceCell.hasPiece() && sourceCell.piece) {
-      gameState.moveToGraveyard(sourceCell.piece);
-      sourceCell.setPiece(null);
-    }
-
-    // If target has a piece, capture it using Cell utilities
-    if (targetCell.hasPiece() && targetCell.piece) {
-      gameState.moveToGraveyard(targetCell.piece);
-      targetCell.setPiece(null);
-    }
-
-    // Place the terrain at the target
-    gameState.setTerrain(targetCell.coordinate, terrain);
-
-    // Record the action
-    gameState.addAction({
-      type: 'move_terrain',
-      pieceId: this.piece.id,
-      data: {
-        from: this.sourceCoordinate.toString(),
-        to: targetCell.coordinate.toString()
-      }
-    });
+    // Move the terrain from source to target (records action automatically)
+    gameState.moveTerrain(this.sourceCoordinate, targetCell.coordinate, this.piece);
   }
 
   /**
@@ -188,26 +162,9 @@ export class BuilderRemoveTerrain extends Action {
    * @param {import('../engine/GameState.js').GameState} gameState - The game state to modify
    */
   perform(targetCell, gameState) {
-    // Check if Builder is removing its own tile (edge case)
-    const builderOnTarget = this.piece.coordinate && this.piece.coordinate.equals(targetCell.coordinate);
     
-    // Remove all contents from the target cell
-    gameState.removeCellContents(targetCell.coordinate);
-
-    // If Builder was on the removed tile, move it to graveyard too
-    if (builderOnTarget) {
-      gameState.moveToGraveyard(this.piece);
-      // Note: The piece's coordinate should be updated by the game engine
-    }
-
-    // Record the action
-    gameState.addAction({
-      type: 'remove_terrain',
-      pieceId: this.piece.id,
-      data: {
-        at: targetCell.coordinate.toString()
-      }
-    });
+    // Remove all contents from the target cell (records action automatically)
+    gameState.removeCellContents(targetCell.coordinate, this.piece);
   }
 
   /**
@@ -268,17 +225,8 @@ export class BuilderPlaceTerrain extends Action {
       targetCell.setPiece(null);
     }
 
-    // Place the land tile
-    gameState.setTerrain(targetCell.coordinate, landTile);
-
-    // Record the action
-    gameState.addAction({
-      type: 'place_terrain',
-      pieceId: this.piece.id,
-      data: {
-        at: targetCell.coordinate.toString()
-      }
-    });
+    // Place the land tile (records action automatically)
+    gameState.setTerrain(targetCell.coordinate, landTile, this.piece);
   }
 
   /**
