@@ -1,7 +1,7 @@
 import { Piece } from './Piece.js';
 import { Action } from '../actions/Action.js';
 import { Move } from '../actions/Move.js';
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 import { Coordinate } from '../engine/Coordinate.js';
 
 /**

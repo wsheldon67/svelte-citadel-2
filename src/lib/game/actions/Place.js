@@ -1,5 +1,5 @@
 import { Action } from './Action.js';
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 import { Coordinate } from '../engine/Coordinate.js';
 
 /**

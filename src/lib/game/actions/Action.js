@@ -1,4 +1,4 @@
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 import { Coordinate } from '../engine/Coordinate.js';
 import { GameState } from '../engine/GameState.js';
 import { db } from '../../firebase.js';

@@ -1,7 +1,7 @@
 import { Piece } from './Piece.js';
 import { Place } from '../actions/Place.js';
 import { Coordinate } from '../engine/Coordinate.js';
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 
 /**
  * Land piece implementation

@@ -4,7 +4,7 @@ import { LandPlace } from './Land.js';
 import { GameState } from '../engine/GameState.js';
 import { Coordinate } from '../engine/Coordinate.js';
 import { Piece } from './Piece.js';
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { RuleViolation } from '../engine/Errors.js';
 
 describe('Land', () => {
   /** @type {Land} */

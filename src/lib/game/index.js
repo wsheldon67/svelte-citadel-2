@@ -2,7 +2,7 @@
 export { GameEngine } from './engine/GameEngine.js';
 export { GameState } from './engine/GameState.js';
 export { Coordinate } from './engine/Coordinate.js';
-export { RuleViolation } from './engine/RuleViolation.js';
+export { RuleViolation } from './engine/Errors.js';
 
 // Base Classes
 export { Piece } from './pieces/Piece.js';

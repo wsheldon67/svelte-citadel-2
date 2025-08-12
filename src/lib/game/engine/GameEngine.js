@@ -1,7 +1,7 @@
 import { GameState } from './GameState.js';
 import { PersistentGameState } from './PersistentGameState.js';
 import { GameStateReplay } from './GameStateReplay.js';
-import { RuleViolation } from './RuleViolation.js';
+import { RuleViolation } from './Errors.js';
 import { Coordinate } from './Coordinate.js';
 
 /**

@@ -1,4 +1,4 @@
-import { RuleViolation } from '../engine/RuleViolation.js';
+import { GameError, RuleViolation } from '../engine/Errors.js';
 import { Coordinate } from '../engine/Coordinate.js';
 
 /**
@@ -73,17 +73,52 @@ export class Piece {
   }
 
   /**
-   * Check if this piece is orthogonally adjacent to a target coordinate
+   * Check if this piece is orthogonal to a target coordinate
    * @param {Coordinate|import('../engine/Cell.js').Cell} target
    * @param {Object} [options]
-   * @param {boolean} [options.gapsAllowed] - Whether gaps are allowed in the line
+   * @param {boolean} [options.gapsAllowed] - Whether terrain gaps (water) are allowed in the line
+   * @param {boolean} [options.blockersAllowed] - Whether other pieces (blockers) are allowed in the line
    * @returns {boolean}
    */
-  isOrthogonalTo(target, options = { gapsAllowed: true }) {
+  isOrthogonalTo(target, options = { gapsAllowed: false, blockersAllowed: false }) {
     if (!this.coordinate) {
       return false;
     }
-    return this.coordinate.isOrthogonalTo(target, options);
+    
+    // Get the target coordinate
+    const targetCoord = target instanceof Coordinate ? target : target.coordinate;
+    
+    // First check if the coordinates are orthogonal (same row or column)
+    if (!this.coordinate.isOrthogonalTo(targetCoord)) {
+      return false;
+    }
+    
+    // If gaps/blockers are allowed, we don't need to check for terrain
+    if (options.gapsAllowed && options.blockersAllowed) {
+      return true;
+    }
+    
+    // If gaps are not allowed, check that all coordinates in the path have terrain
+    if (!this._gameState) {
+      // Without game state, we can't check for terrain gaps
+      throw new GameError(`Cannot check for blockers/terrain gaps when game state is not provided to Piece.`);
+    }
+    
+    // Get the path between the coordinates (excluding start and end)
+    const path = this.coordinate.getOrthogonalPathTo(targetCoord);
+    
+    // Check that every coordinate in the path has terrain (not water)
+    for (const coord of path) {
+      const cell = this._gameState.getCell(coord);
+      if (!options.gapsAllowed && (!cell || !cell.hasTerrain())) {
+        return false; // Water blocks the path
+      }
+      if (!options.blockersAllowed && cell.hasPiece()) {
+        return false; // Pieces block the path
+      }
+    }
+    
+    return true;
   }
 
   /**
