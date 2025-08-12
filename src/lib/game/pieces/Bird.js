@@ -46,7 +46,7 @@ export class BirdMove extends Move {
     }
     
     // Bird can only move orthogonally (no gaps allowed for adjacency, but line movement allowed)
-    if (!this.piece.isOrthogonalTo(targetCell.coordinate, { gapsAllowed: true })) {
+    if (!this.piece.isOrthogonalTo(targetCell, { gapsAllowed: false })) {
       throw new RuleViolation('Bird can only move to orthogonal tiles');
     }
     

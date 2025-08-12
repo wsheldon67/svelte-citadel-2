@@ -46,7 +46,7 @@ export class BuilderMove extends Move {
     }
 
     // Validate adjacency first so diagonal attempts produce the expected error message
-    if (!this.piece.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
+    if (!this.piece.isAdjacentTo(targetCell, { allowDiagonal: false })) {
       throw new RuleViolation('Builder can only move to orthogonally adjacent squares');
     }
 
@@ -92,7 +92,7 @@ export class BuilderMoveTerrain extends Action {
     }
 
     // Builder must be orthogonally adjacent to the source terrain
-    if (!this.piece.isOrthogonallyAdjacentTo(this.sourceCoordinate)) {
+    if (!this.piece.isAdjacentTo(this.sourceCoordinate, { allowDiagonal: false })) {
       throw new RuleViolation('Builder must be orthogonally adjacent to the terrain to move');
     }
 
@@ -103,7 +103,7 @@ export class BuilderMoveTerrain extends Action {
     }
 
     // Target must be orthogonally adjacent to the source terrain
-    if (!this.sourceCoordinate.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
+    if (!this.sourceCoordinate.isAdjacentTo(targetCell.coordinate, { allowDiagonal: false })) {
       throw new RuleViolation('Land tile can only be moved to orthogonally adjacent positions');
     }
   }
@@ -146,7 +146,7 @@ export class BuilderRemoveTerrain extends Action {
     super.check(targetCell, currentGame, newGame);
 
     // Builder must be orthogonally adjacent to the target
-    if (!this.piece.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
+    if (!this.piece.isAdjacentTo(targetCell.coordinate, { allowDiagonal: false })) {
       throw new RuleViolation('Builder must be orthogonally adjacent to the terrain to remove');
     }
 
@@ -191,7 +191,7 @@ export class BuilderPlaceTerrain extends Action {
     super.check(targetCell, currentGame, newGame);
 
     // Builder must be orthogonally adjacent to the target
-    if (!this.piece.isOrthogonallyAdjacentTo(targetCell.coordinate)) {
+    if (!this.piece.isAdjacentTo(targetCell.coordinate, { allowDiagonal: false })) {
       throw new RuleViolation('Builder must be orthogonally adjacent to the placement location');
     }
 

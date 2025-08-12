@@ -65,54 +65,34 @@ export class Piece {
 
   /**
    * Check if this piece is orthogonally adjacent to a target coordinate
-   * @param {Coordinate} target
+   * @param {Coordinate|import('../engine/Cell.js').Cell} target
    * @param {Object} [options]
    * @param {boolean} [options.gapsAllowed] - Whether gaps are allowed in the line
    * @returns {boolean}
    */
-  isOrthogonalTo(target, options = {}) {
+  isOrthogonalTo(target, options = { gapsAllowed: true }) {
     if (!this.coordinate) {
       return false;
     }
-    const opts = { gapsAllowed: true, ...options };
-    return this.coordinate.isOrthogonalTo(target, opts);
+    return this.coordinate.isOrthogonalTo(target, options);
   }
 
   /**
-   * Check if this piece is adjacent to a target coordinate
-   * @param {Coordinate} target
+   * Check if this coordinate is adjacent (orthogonal or diagonal) to another
+   * @param {Coordinate|import('../engine/Cell.js').Cell} target
+   * @param {Object} [options]
+   * @param {boolean} [options.allowOrthogonal] - Whether to allow orthogonal adjacency
+   * @param {boolean} [options.allowDiagonal] - Whether to allow diagonal adjacency
    * @returns {boolean}
    */
-  isAdjacentTo(target) {
+  isAdjacentTo(target, options = { allowOrthogonal: true, allowDiagonal: true }) {
     if (!this.coordinate) {
       return false;
     }
-    return this.coordinate.isAdjacentTo(target);
+    return this.coordinate.isAdjacentTo(target, options);
   }
 
-  /**
-   * Check if this piece is orthogonally adjacent to a target coordinate
-   * @param {Coordinate} target
-   * @returns {boolean}
-   */
-  isOrthogonallyAdjacentTo(target) {
-    if (!this.coordinate) {
-      return false;
-    }
-    return this.coordinate.isOrthogonallyAdjacentTo(target);
-  }
 
-  /**
-   * Check if this piece is diagonally adjacent to a target coordinate
-   * @param {Coordinate} target
-   * @returns {boolean}
-   */
-  isDiagonallyAdjacentTo(target) {
-    if (!this.coordinate) {
-      return false;
-    }
-    return this.coordinate.isDiagonallyAdjacentTo(target);
-  }
 
   /**
    * Get the Manhattan distance to a target coordinate

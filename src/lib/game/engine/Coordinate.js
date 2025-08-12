@@ -1,3 +1,5 @@
+import { Cell } from './Cell.js';
+
 /**
  * Represents a coordinate on the infinite 2D grid.
  * Coordinates are immutable and can be used as map keys.
@@ -89,11 +91,19 @@ export class Coordinate {
 
   /**
    * Check if this coordinate is adjacent (orthogonal or diagonal) to another
-   * @param {Coordinate} other
+   * @param {Coordinate|Cell} other
+   * @param {Object} [options]
+   * @param {boolean} [options.allowOrthogonal] - Whether to allow orthogonal adjacency
+   * @param {boolean} [options.allowDiagonal] - Whether to allow diagonal adjacency
    * @returns {boolean}
    */
-  isAdjacentTo(other) {
-    return this.isOrthogonallyAdjacentTo(other) || this.isDiagonallyAdjacentTo(other);
+  isAdjacentTo(other, options = { allowOrthogonal: true, allowDiagonal: true }) {
+    const { allowOrthogonal = true, allowDiagonal = true } = options;
+    if (other instanceof Cell) {
+      other = other.coordinate;
+    }
+    return (allowOrthogonal && this.isOrthogonallyAdjacentTo(other)) ||
+           (allowDiagonal && this.isDiagonallyAdjacentTo(other));
   }
 
   /**
@@ -107,12 +117,14 @@ export class Coordinate {
 
   /**
    * Check if this coordinate is in the same line (orthogonal) as another
-   * @param {Coordinate} other
+   * @param {Coordinate|Cell} other
    * @param {Object} options
-   * @param {boolean} options.gapsAllowed - Whether gaps between coordinates are allowed
    * @returns {boolean}
    */
-  isOrthogonalTo(other, options = { gapsAllowed: true }) {
+  isOrthogonalTo(other, options = {}) {
+    if (other instanceof Cell) {
+      other = other.coordinate;
+    }
     const onSameRow = this.y === other.y;
     const onSameCol = this.x === other.x;
     
@@ -120,12 +132,7 @@ export class Coordinate {
       return false;
     }
 
-    if (options.gapsAllowed) {
-      return true;
-    }
-
-    // Check if adjacent when gaps not allowed
-    return this.isOrthogonallyAdjacentTo(other);
+    return true;
   }
 
   /**
