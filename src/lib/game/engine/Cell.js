@@ -232,6 +232,12 @@ export class Cell {
    */
   setTerrain(terrain) {
     this.terrain = terrain;
+    
+    // Update terrain coordinates and game state references
+    if (terrain && terrain._setCoordinate && terrain._setGameState && this.gameState) {
+      terrain._setCoordinate(this.coordinate);
+      terrain._setGameState(this.gameState);
+    }
   }
 
   /**

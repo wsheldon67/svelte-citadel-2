@@ -739,8 +739,8 @@ export class GameState {
     state.board = new Map();
     for (const cellData of data.board) {
       const coord = Coordinate.fromKey(cellData.coordinate);
-      const terrain = cellData.terrain ? pieceFromJSON(cellData.terrain) : null;
-      const piece = cellData.piece ? pieceFromJSON(cellData.piece) : null;
+      const terrain = cellData.terrain ? pieceFromJSON(cellData.terrain, state) : null;
+      const piece = cellData.piece ? pieceFromJSON(cellData.piece, state) : null;
       const cell = new Cell(coord, terrain, piece, state);
       state.board.set(cellData.coordinate, cell);
     }
@@ -759,11 +759,11 @@ export class GameState {
     // Restore player stashes
     state.playerStashes = new Map();
     for (const { playerId, stash } of data.playerStashes) {
-      state.playerStashes.set(playerId, stash.map(pieceData => pieceFromJSON(pieceData)));
+      state.playerStashes.set(playerId, stash.map(pieceData => pieceFromJSON(pieceData, state)));
     }
     
-    state.communityPool = data.communityPool.map(pieceData => pieceFromJSON(pieceData));
-    state.graveyard = data.graveyard.map(pieceData => pieceFromJSON(pieceData));
+    state.communityPool = data.communityPool.map(pieceData => pieceFromJSON(pieceData, state));
+    state.graveyard = data.graveyard.map(pieceData => pieceFromJSON(pieceData, state));
     state.actionHistory = data.actionHistory;
     state.createdAt = new Date(data.createdAt);
     state.lastModified = new Date(data.lastModified);

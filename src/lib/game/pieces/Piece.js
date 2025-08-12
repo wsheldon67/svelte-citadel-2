@@ -6,6 +6,7 @@ import { Coordinate } from '../engine/Coordinate.js';
  * @property {string} type - The type of piece (e.g., 'Bird', 'Soldier')
  * @property {string} owner - The player who owns this piece
  * @property {string} [id] - Unique identifier for the piece
+ * @property {import('../engine/GameState.js').GameState} [gameState] - Optional game state reference
  */
 
 /**
@@ -23,7 +24,7 @@ export class Piece {
   /**
    * @param {PieceOptions} options
    */
-  constructor({ type, owner, id = undefined }) {
+  constructor({ type, owner, id = undefined, gameState = undefined }) {
     this.type = type;
     this.owner = owner;
     this.id = id || `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -32,9 +33,9 @@ export class Piece {
     /** @type {Coordinate|null} */
     this._coordinate = null;
     
-    // Reference to the current game state (set when piece is placed)
+    // Reference to the current game state (set when piece is placed or provided in constructor)
     /** @type {import('../engine/GameState.js').GameState|null} */
-    this._gameState = null;
+    this._gameState = gameState || null;
   }
 
   /**
@@ -43,6 +44,14 @@ export class Piece {
    */
   get coordinate() {
     return this._coordinate;
+  }
+
+  /**
+   * Get the current game state reference
+   * @returns {import('../engine/GameState.js').GameState|null}
+   */
+  get gameState() {
+    return this._gameState;
   }
 
   /**
@@ -153,7 +162,8 @@ export class Piece {
     const copy = new Constructor({
       type: this.type,
       owner: this.owner,
-      id: this.id
+      id: this.id,
+      gameState: this._gameState || undefined
     });
     return copy;
   }
@@ -175,13 +185,15 @@ export class Piece {
    * Default implementation that works for most pieces.
    * Subclasses can override if they need special deserialization logic.
    * @param {PieceJSON} data
+   * @param {import('../engine/GameState.js').GameState} [gameState] - Optional game state reference
    * @returns {Piece}
    */
-  static fromJSON(data) {
+  static fromJSON(data, gameState = undefined) {
     // @ts-ignore - Subclasses handle the type parameter in their constructors
     return new this({
       owner: data.owner,
-      id: data.id
+      id: data.id,
+      gameState: gameState
     });
   }
 
