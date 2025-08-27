@@ -2,7 +2,7 @@
   import GameBoard from './GameBoard.svelte';
   import { Coordinate } from '$lib/game';
   import { Land, LandPlace } from '$lib/game/pieces/Land.js';
-  import { RuleViolation } from '$lib/game/engine/RuleViolation.js';
+  import { RuleViolation } from '$lib/game/engine/Errors.js';
 
   let { gameState, myId, onPlaceLand } = $props();
   
