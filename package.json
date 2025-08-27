@@ -14,7 +14,10 @@
 		"test:server": "vitest --run --project server",
 		"test:client": "vitest --run --project client",
 		"test": "npm run test:unit && npm run test:e2e",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"test:e2e:emulator": "firebase emulators:exec --only firestore,auth 'playwright test'",
+		"emulators:start": "firebase emulators:start --only firestore,auth",
+		"emulators:clear": "curl -X DELETE http://localhost:8080/emulator/v1/projects/citadel-bc67c/databases/(default)/documents && curl -X DELETE http://localhost:9099/emulator/v1/projects/citadel-bc67c/accounts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.49.1",
@@ -22,6 +25,7 @@
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@vitest/browser": "^3.2.3",
+		"node-fetch": "^3.3.2",
 		"playwright": "^1.53.0",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",

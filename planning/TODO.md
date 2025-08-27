@@ -210,17 +210,18 @@
 
 ### Integration Testing
 - [ ] Test multiplayer synchronization
-- [ ] Test Firebase integration
+- [x] **COMPLETED**: Firebase emulator testing setup - Configured Playwright to use Firebase emulators for isolated testing, eliminating need for live Firebase connection during tests and ensuring test isolation
 - [ ] Test UI interactions
 - [ ] Test piece authoring API
  - [ ] Test lobby art set uniqueness enforcement and conflict resolution
  - [ ] Test custom set upload flow (validation, storage, metadata)
 
 ### End-to-End Testing (Playwright)
+- [x] **COMPLETED**: Firebase emulator integration - Set up Playwright tests with Firebase emulators, including create/join game flow with separate browser contexts for multi-player testing
 - [ ] Complete game flow testing
 - [ ] Multi-player game scenarios
 - [ ] Error handling and edge cases
- - [ ] E2E: create-and-join lobby flow asserts both players visible
+ - [x] **COMPLETED**: E2E: create-and-join lobby flow asserts both players visible
  - [ ] Art set selection end-to-end: unique selection, host shared set, fallback rendering when assets missing
 
 ---
